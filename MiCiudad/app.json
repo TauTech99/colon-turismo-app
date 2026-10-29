@@ -1,0 +1,98 @@
+{
+  "expo": {
+    "name": "Mi Ciudad Colón",
+    "slug": "MiCiudad",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "miciudad",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "icon": "./assets/icon.png",
+      "bundleIdentifier": "com.miciudad.colon"
+    },
+    "android": {
+      "icon": "./assets/icon.png",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFF8F0",
+        "foregroundImage": "./assets/icon.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.miciudad.colon"
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFF8F0",
+          "image": "./assets/splash.png",
+          "imageWidth": 200
+        }
+      ],
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Mi Ciudad Colón usa Face ID para que vuelvas a entrar a tu cuenta sin escribir la contraseña."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Mi Ciudad Colón usa Face ID para que vuelvas a entrar a tu cuenta sin escribir la contraseña."
+        }
+      ],
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Mi Ciudad Colón usa tu ubicación para mostrarte los lugares cercanos y cómo llegar.",
+          "locationAlwaysAndWhenInUsePermission": "Mi Ciudad Colón usa tu ubicación, incluso con la app cerrada, para avisarte cuando estás cerca de un lugar.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Mi Ciudad Colón usa la cámara para leer el código QR de los carteles y sacar fotos de tus visitas.",
+          "recordAudioAndroid": false
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Mi Ciudad Colón usa tu galería para que elijas una foto de tu visita.",
+          "cameraPermission": "Mi Ciudad Colón usa la cámara para sacar fotos de tus visitas.",
+          "microphonePermission": false
+        }
+      ],
+      "expo-notifications",
+      [
+        "expo-audio",
+        {
+          "enableBackgroundPlayback": true,
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
+      "@react-native-vector-icons/ionicons",
+      "expo-asset",
+      "react-native-maps"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "aaf1544a-9bec-46a2-9f02-fcd6d8578885"
+      }
+    },
+    "owner": "tau_dev"
+  }
+}
