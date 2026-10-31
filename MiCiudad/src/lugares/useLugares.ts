@@ -109,23 +109,24 @@ export function useLugares(filtros?: FiltrosLugar): {
     queryFn: pedirLugares,
     placeholderData: desdeSqlite.length > 0 ? desdeSqlite : undefined,
   });
+  const recargarConsulta = consulta.refetch;
 
   // Si vuelve la red, Query pide de nuevo. El ref evita un doble
   // pedido al montar (online ya viene true).
   const veniaOnline = useRef(online);
   useEffect(() => {
     if (online && !veniaOnline.current) {
-      void consulta.refetch();
+      void recargarConsulta();
     }
     veniaOnline.current = online;
-  }, [online, consulta.refetch]);
+  }, [online, recargarConsulta]);
 
   const todos = consulta.data ?? [];
   const cargando = consulta.isPending && todos.length === 0;
   const error = consulta.isError && todos.length === 0 ? consulta.error.message : null;
 
   async function recargar() {
-    await consulta.refetch();
+    await recargarConsulta();
   }
 
   const categoriaId = filtros?.categoriaId ?? null;

@@ -112,19 +112,23 @@ export function useFavoritos(): {
   const { usuario } = useSesion();
   const { online } = useRed();
   const usuarioId = usuario?.id ?? null;
-  const [desdeSqlite, setDesdeSqlite] = useState<Favorito[]>([]);
+  // El id va con las filas: si cambia la cuenta, no usamos el caché viejo.
+  // Así no hace falta setDesdeSqlite([]) en el efecto (warning de React 19).
+  const [desdeSqlite, setDesdeSqlite] = useState<{
+    usuarioId: string;
+    filas: Favorito[];
+  } | null>(null);
 
   useEffect(() => {
-    let cancelado = false;
-    setDesdeSqlite([]);
     if (!usuarioId) {
       return;
     }
 
+    let cancelado = false;
     leerFavoritos(usuarioId)
       .then((guardados) => {
         if (!cancelado && guardados.length > 0) {
-          setDesdeSqlite(guardados);
+          setDesdeSqlite({ usuarioId, filas: guardados });
         }
       })
       .catch((errorCapturado) => {
@@ -136,20 +140,26 @@ export function useFavoritos(): {
     };
   }, [usuarioId]);
 
+  const placeholderLocal =
+    usuarioId && desdeSqlite?.usuarioId === usuarioId && desdeSqlite.filas.length > 0
+      ? desdeSqlite.filas
+      : undefined;
+
   const consulta = useQuery({
     queryKey: usuarioId ? claveFavoritos(usuarioId) : ['favoritos', 'sin-sesion'],
     queryFn: () => pedirFavoritos(usuarioId as string),
     enabled: Boolean(usuarioId),
-    placeholderData: desdeSqlite.length > 0 ? desdeSqlite : undefined,
+    placeholderData: placeholderLocal,
   });
+  const recargarConsulta = consulta.refetch;
 
   const veniaOnline = useRef(online);
   useEffect(() => {
     if (usuarioId && online && !veniaOnline.current) {
-      void consulta.refetch();
+      void recargarConsulta();
     }
     veniaOnline.current = online;
-  }, [online, consulta.refetch, usuarioId]);
+  }, [online, recargarConsulta, usuarioId]);
 
   const favoritos = usuarioId ? (consulta.data ?? []) : [];
   const cargando = Boolean(usuarioId) && consulta.isPending && favoritos.length === 0;
@@ -160,7 +170,7 @@ export function useFavoritos(): {
     if (!usuarioId) {
       return;
     }
-    await consulta.refetch();
+    await recargarConsulta();
   }
 
   // Al volver a la lista: lee SQLite otra vez (la estrella ya escribió).

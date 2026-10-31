@@ -57,19 +57,23 @@ export function useVisitas(): {
   const { usuario } = useSesion();
   const { online } = useRed();
   const usuarioId = usuario?.id ?? null;
-  const [desdeSqlite, setDesdeSqlite] = useState<Visita[]>([]);
+  // El id va con las filas: si cambia la cuenta, no usamos el caché viejo.
+  // Así no hace falta setDesdeSqlite([]) en el efecto (warning de React 19).
+  const [desdeSqlite, setDesdeSqlite] = useState<{
+    usuarioId: string;
+    filas: Visita[];
+  } | null>(null);
 
   useEffect(() => {
-    let cancelado = false;
-    setDesdeSqlite([]);
     if (!usuarioId) {
       return;
     }
 
+    let cancelado = false;
     obtenerVisitas(usuarioId)
       .then((guardadas) => {
         if (!cancelado && guardadas.length > 0) {
-          setDesdeSqlite(guardadas);
+          setDesdeSqlite({ usuarioId, filas: guardadas });
         }
       })
       .catch((errorCapturado) => {
@@ -81,22 +85,28 @@ export function useVisitas(): {
     };
   }, [usuarioId]);
 
+  const placeholderLocal =
+    usuarioId && desdeSqlite?.usuarioId === usuarioId && desdeSqlite.filas.length > 0
+      ? desdeSqlite.filas
+      : undefined;
+
   const consulta = useQuery({
     queryKey: usuarioId ? claveVisitas(usuarioId) : ['visitas', 'sin-sesion'],
     queryFn: () => pedirVisitas(usuarioId as string),
     enabled: Boolean(usuarioId),
-    placeholderData: desdeSqlite.length > 0 ? desdeSqlite : undefined,
+    placeholderData: placeholderLocal,
   });
+  const recargarConsulta = consulta.refetch;
 
   // Si vuelve la red, Query pide de nuevo. El ref evita un doble
   // pedido al montar (online ya viene true).
   const veniaOnline = useRef(online);
   useEffect(() => {
     if (usuarioId && online && !veniaOnline.current) {
-      void consulta.refetch();
+      void recargarConsulta();
     }
     veniaOnline.current = online;
-  }, [online, consulta.refetch, usuarioId]);
+  }, [online, recargarConsulta, usuarioId]);
 
   const visitas = usuarioId ? (consulta.data ?? []) : [];
   const cargando = Boolean(usuarioId) && consulta.isPending && visitas.length === 0;
@@ -107,8 +117,8 @@ export function useVisitas(): {
     if (!usuarioId) {
       return;
     }
-    await consulta.refetch();
-  }, [usuarioId, consulta.refetch]);
+    await recargarConsulta();
+  }, [usuarioId, recargarConsulta]);
 
   return { visitas, cargando, error, recargar };
 }

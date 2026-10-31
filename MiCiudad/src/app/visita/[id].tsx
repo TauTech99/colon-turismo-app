@@ -7,7 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Boton } from '@/compartido/componentes/Boton';
@@ -17,6 +17,7 @@ import { TEXTO_SOBRE_CATEGORIA, tipografia, useTema } from '@/compartido/tema';
 import { useSesion } from '@/cuenta/SesionContext';
 import { leerCategorias, leerLugarPorId } from '@/lugares/lugaresDb';
 import { sincronizarPendientes } from '@/recorrido/colaVisitas';
+import { CamaraFoto } from '@/recorrido/componentes/CamaraFoto';
 import {
   borrarFotoVisita,
   fotoSoloEnOtroTelefono,
@@ -121,6 +122,7 @@ export default function PantallaVisita() {
   }
 
   const [cambiandoFoto, setCambiandoFoto] = useState(false);
+  const [camaraAbierta, setCamaraAbierta] = useState(false);
 
   // uriTemporal = foto nueva de cámara/galería; null = quitar la foto.
   // Primero se espera a la cola: si justo estaba subiendo esta visita
@@ -156,33 +158,6 @@ export default function PantallaVisita() {
     }
   }
 
-  // Mismos permisos y mensajes que SelectorFoto (visita/nueva).
-  async function sacarFoto() {
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) {
-      const sinPedidoNativo = permiso.canAskAgain === false;
-      Alert.alert(
-        'Sin cámara',
-        'No diste permiso para usar la cámara. Podés elegir una de la galería.',
-        sinPedidoNativo
-          ? [
-              { text: 'OK', style: 'cancel' },
-              { text: 'Abrir ajustes', onPress: () => void Linking.openSettings() },
-            ]
-          : [{ text: 'OK' }],
-      );
-      return;
-    }
-    const resultado = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.5,
-      allowsEditing: false,
-    });
-    if (!resultado.canceled && resultado.assets[0]) {
-      await reemplazarFoto(resultado.assets[0].uri);
-    }
-  }
-
   async function elegirDeGaleria() {
     const permiso = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permiso.granted) {
@@ -202,7 +177,7 @@ export default function PantallaVisita() {
   function elegirFotoNueva() {
     const tieneFoto = sePuedeMostrarFoto(visita?.fotoUri ?? null);
     Alert.alert(tieneFoto ? 'Cambiar foto' : 'Agregar foto', '¿De dónde sacás la foto?', [
-      { text: 'Cámara', onPress: () => void sacarFoto() },
+      { text: 'Cámara', onPress: () => setCamaraAbierta(true) },
       { text: 'Galería', onPress: () => void elegirDeGaleria() },
       { text: 'Cancelar', style: 'cancel' },
     ]);
@@ -449,6 +424,13 @@ export default function PantallaVisita() {
           ) : null}
         </View>
       </ScrollView>
+      <CamaraFoto
+        visible={camaraAbierta}
+        onCerrar={() => setCamaraAbierta(false)}
+        onFoto={(uriNueva) => {
+          void reemplazarFoto(uriNueva);
+        }}
+      />
     </>
   );
 }

@@ -261,23 +261,24 @@ export function useEventos(): {
     queryFn: pedirEventos,
     placeholderData: desdeSqlite.length > 0 ? desdeSqlite : undefined,
   });
+  const recargarConsulta = consulta.refetch;
 
   // Si vuelve la red, Query pide de nuevo. El ref evita un doble
   // pedido al montar (online ya viene true).
   const veniaOnline = useRef(online);
   useEffect(() => {
     if (online && !veniaOnline.current) {
-      void consulta.refetch();
+      void recargarConsulta();
     }
     veniaOnline.current = online;
-  }, [online, consulta.refetch]);
+  }, [online, recargarConsulta]);
 
   const todos = consulta.data ?? [];
   const cargando = consulta.isPending && todos.length === 0;
   const error = consulta.isError && todos.length === 0 ? consulta.error.message : null;
 
   async function recargar() {
-    await consulta.refetch();
+    await recargarConsulta();
   }
 
   const dias = useMemo(() => agruparDesdeHoy(todos), [todos]);
@@ -292,19 +293,20 @@ export function useEvento(id: string): {
   recargar: () => Promise<void>;
 } {
   const { online } = useRed();
-  const [desdeSqlite, setDesdeSqlite] = useState<Evento | null>(null);
+  // El id va con el evento: al cambiar de ficha no usamos el caché viejo.
+  // Así no hace falta setDesdeSqlite(null) en el efecto (warning de React 19).
+  const [desdeSqlite, setDesdeSqlite] = useState<{ id: string; evento: Evento } | null>(null);
 
   useEffect(() => {
-    let cancelado = false;
-    setDesdeSqlite(null);
     if (!id) {
       return;
     }
 
+    let cancelado = false;
     leerEventoPorId(id)
       .then((guardado) => {
         if (!cancelado && guardado) {
-          setDesdeSqlite(guardado);
+          setDesdeSqlite({ id, evento: guardado });
         }
       })
       .catch((errorCapturado) => {
@@ -320,16 +322,17 @@ export function useEvento(id: string): {
     queryKey: claveEvento(id),
     queryFn: () => pedirEvento(id),
     enabled: id.length > 0,
-    placeholderData: desdeSqlite ?? undefined,
+    placeholderData: desdeSqlite?.id === id ? desdeSqlite.evento : undefined,
   });
+  const recargarConsulta = consulta.refetch;
 
   const veniaOnline = useRef(online);
   useEffect(() => {
     if (id.length > 0 && online && !veniaOnline.current) {
-      void consulta.refetch();
+      void recargarConsulta();
     }
     veniaOnline.current = online;
-  }, [online, consulta.refetch, id]);
+  }, [online, recargarConsulta, id]);
 
   // Si Query falló (p. ej. "no existe"), no dejamos la copia de SQLite.
   // El error de red no llega acá: pedirEvento ya devolvió lo guardado.
@@ -342,7 +345,7 @@ export function useEvento(id: string): {
       : null;
 
   async function recargar() {
-    await consulta.refetch();
+    await recargarConsulta();
   }
 
   return { evento, cargando, error, recargar };

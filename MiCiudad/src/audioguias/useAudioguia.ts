@@ -20,38 +20,40 @@ import type { Audioguia } from '@/tipos/lugar';
 // del botón de la pantalla bloqueada.
 export const SEGUNDOS_ADELANTO = 15;
 
-// Metro necesita un require() escrito a mano por cada archivo
-// (igual que las fotos en LugarCabecera). El mock guarda URLs
-// como las de la API; acá se busca el audio por el nombre del
-// archivo (lo que va después de la última /).
-const AUDIOS_LOCALES: Record<string, number> = {
-  'casa-cultura-es.m4a': require('../../assets/audioguias/lug-003-casa-de-la-cultura.mp3'),
-  'molino-es.m4a': require('../../assets/audioguias/lug-004-molino-forclaz.mp3'),
-  'iglesia-es.m4a': require('../../assets/audioguias/lug-005-iglesia-nuestra-senora-del-carmen.mp3'),
-  'puerto-es.m4a': require('../../assets/audioguias/lug-006-puerto-viejo.mp3'),
-  'palmar-es.m4a': require('../../assets/audioguias/lug-007-parque-nacional-el-palmar.mp3'),
-};
+// --- CÓDIGO VIEJO DEL MOCK (no borrar) ---
+// Metro necesita un require() escrito a mano por cada archivo.
+// El mock guardaba URLs tipo …/audio/molino-es.m4a y acá se buscaba
+// el mp3 empaquetado por ese nombre. La API manda otros archivos
+// (semilla-audio-guide-mill.mp3…): este mapa ya no pega.
+//
+// const AUDIOS_LOCALES: Record<string, number> = {
+//   'casa-cultura-es.m4a': require('../../assets/audioguias/lug-003-casa-de-la-cultura.mp3'),
+//   'molino-es.m4a': require('../../assets/audioguias/lug-004-molino-forclaz.mp3'),
+//   'iglesia-es.m4a': require('../../assets/audioguias/lug-005-iglesia-nuestra-senora-del-carmen.mp3'),
+//   'puerto-es.m4a': require('../../assets/audioguias/lug-006-puerto-viejo.mp3'),
+//   'palmar-es.m4a': require('../../assets/audioguias/lug-007-parque-nacional-el-palmar.mp3'),
+// };
+//
+// function assetIdParaUrl(url: string): number | undefined {
+//   const archivo = url.split('/').pop();
+//   if (!archivo) {
+//     return undefined;
+//   }
+//   return AUDIOS_LOCALES[archivo];
+// }
 
-function assetIdParaUrl(url: string): number | undefined {
-  const archivo = url.split('/').pop();
-  if (!archivo) {
-    return undefined;
-  }
-  return AUDIOS_LOCALES[archivo];
-}
-
-// Prioridad: 1) archivo en Paths.document, 2) asset empaquetado,
-// 3) URL remota (cuando exista la API).
+// Prioridad: 1) archivo ya bajado en Paths.document, 2) URL de la API.
 function fuenteParaReproducir(url: string): AudioSource {
   const enDisco = uriLocalSiExiste(url);
   if (enDisco) {
     return { uri: enDisco };
   }
 
-  const assetId = assetIdParaUrl(url);
-  if (assetId !== undefined) {
-    return { assetId, name: url };
-  }
+  // CÓDIGO VIEJO DEL MOCK (no borrar): reproducía el require() empaquetado.
+  // const assetId = assetIdParaUrl(url);
+  // if (assetId !== undefined) {
+  //   return { assetId, name: url };
+  // }
 
   return url;
 }
@@ -127,10 +129,8 @@ export function useAudioguia(audioguia: Audioguia, titulo: string): ControlesAud
         return;
       }
 
-      const uri = await asegurarAudioguiaEnDisco(
-        audioguia.url,
-        assetIdParaUrl(audioguia.url),
-      );
+      // CÓDIGO VIEJO DEL MOCK: el 2.º arg era assetIdParaUrl(audioguia.url).
+      const uri = await asegurarAudioguiaEnDisco(audioguia.url);
       // Después del await el usuario pudo haber salido: el player
       // de useAudioPlayer ya se liberó. Solo actualizamos estado.
       if (cancelado || !vivoRef.current || !uri) {

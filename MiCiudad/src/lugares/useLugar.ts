@@ -53,19 +53,20 @@ export function useLugar(id: string): {
   recargar: () => Promise<void>;
 } {
   const { online } = useRed();
-  const [desdeSqlite, setDesdeSqlite] = useState<Lugar | null>(null);
+  // El id va con el lugar: al cambiar de ficha no usamos el caché viejo.
+  // Así no hace falta setDesdeSqlite(null) en el efecto (warning de React 19).
+  const [desdeSqlite, setDesdeSqlite] = useState<{ id: string; lugar: Lugar } | null>(null);
 
   useEffect(() => {
-    let cancelado = false;
-    setDesdeSqlite(null);
     if (!id) {
       return;
     }
 
+    let cancelado = false;
     leerLugarPorId(id)
       .then((guardado) => {
         if (!cancelado && guardado) {
-          setDesdeSqlite(guardado);
+          setDesdeSqlite({ id, lugar: guardado });
         }
       })
       .catch((errorCapturado) => {
@@ -81,16 +82,17 @@ export function useLugar(id: string): {
     queryKey: claveLugar(id),
     queryFn: () => pedirLugar(id),
     enabled: id.length > 0,
-    placeholderData: desdeSqlite ?? undefined,
+    placeholderData: desdeSqlite?.id === id ? desdeSqlite.lugar : undefined,
   });
+  const recargarConsulta = consulta.refetch;
 
   const veniaOnline = useRef(online);
   useEffect(() => {
     if (id.length > 0 && online && !veniaOnline.current) {
-      void consulta.refetch();
+      void recargarConsulta();
     }
     veniaOnline.current = online;
-  }, [online, consulta.refetch, id]);
+  }, [online, recargarConsulta, id]);
 
   // Si Query falló (p. ej. "no existe"), no dejamos la copia de SQLite.
   // El error de red no llega acá: pedirLugar ya devolvió lo guardado.
@@ -103,7 +105,7 @@ export function useLugar(id: string): {
       : null;
 
   async function recargar() {
-    await consulta.refetch();
+    await recargarConsulta();
   }
 
   return { lugar, cargando, error, recargar };

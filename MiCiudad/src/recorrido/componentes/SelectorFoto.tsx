@@ -1,6 +1,7 @@
 import { Image } from 'expo-image';
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { BORDE_BOTON, tipografia, useTema } from '@/compartido/tema';
 import {
@@ -8,6 +9,7 @@ import {
   guardarBorradorVisita,
   guardarUriEnBorrador,
 } from '@/recorrido/borradorVisita';
+import { CamaraFoto } from '@/recorrido/componentes/CamaraFoto';
 
 type Props = {
   lugarId: string;
@@ -16,59 +18,17 @@ type Props = {
   onCambiar: (uri: string | null) => void;
 };
 
-// Cámara o galería con expo-image-picker.
-// Antes de abrir, guardamos el lugarId en un borrador: si Android
-// mata la Activity (poca RAM), al volver recuperamos la foto con
-// getPendingResultAsync (docs Expo) y reabrimos esta pantalla.
+// Cámara: expo-camera (CameraView), adentro de la app (PRD).
+// Galería: expo-image-picker. El borrador es por si Android mata
+// la Activity al abrir la galería (poca RAM).
 
 export function SelectorFoto({ lugarId, uri, onCambiar }: Props) {
   const { colores } = useTema();
+  const [camaraAbierta, setCamaraAbierta] = useState(false);
 
   async function aplicarFoto(uriNueva: string) {
     await guardarUriEnBorrador(uriNueva);
     onCambiar(uriNueva);
-  }
-
-  async function sacarFoto() {
-    await guardarBorradorVisita(lugarId);
-
-    const permiso = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permiso.granted) {
-      await borrarBorradorVisita();
-      // Si el SO ya no pregunta de nuevo, ofrecemos Ajustes (opción A del mock).
-      const sinPedidoNativo = permiso.canAskAgain === false;
-      Alert.alert(
-        'Sin cámara',
-        sinPedidoNativo
-          ? 'No diste permiso para usar la cámara. Podés elegir una de la galería o registrar la visita sin foto. Si querés activarla, abrí Ajustes.'
-          : 'No diste permiso para usar la cámara. Podés elegir una de la galería o registrar la visita sin foto.',
-        sinPedidoNativo
-          ? [
-              { text: 'OK', style: 'cancel' },
-              { text: 'Abrir ajustes', onPress: () => void Linking.openSettings() },
-            ]
-          : [{ text: 'OK' }],
-      );
-      return;
-    }
-
-    const resultado = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      // Un poco más liviana: menos chance de que Android mate la app.
-      quality: 0.5,
-      allowsEditing: false,
-    });
-
-    if (!resultado.canceled && resultado.assets[0]) {
-      await aplicarFoto(resultado.assets[0].uri);
-      return;
-    }
-
-    // Canceló o la Activity murió (en ese caso el borrador queda
-    // para RecuperarVisitaTrasCamara). Si canceló a mano, limpiamos.
-    if (resultado.canceled) {
-      await borrarBorradorVisita();
-    }
   }
 
   async function elegirDeGaleria() {
@@ -131,7 +91,7 @@ export function SelectorFoto({ lugarId, uri, onCambiar }: Props) {
       <View style={estilos.fila}>
         <Pressable
           onPress={() => {
-            void sacarFoto();
+            setCamaraAbierta(true);
           }}
           accessibilityRole="button"
           accessibilityLabel="Sacar foto con la cámara"
@@ -156,6 +116,14 @@ export function SelectorFoto({ lugarId, uri, onCambiar }: Props) {
           <Text style={[estilos.textoBoton, { color: colores.primario }]}>Galería</Text>
         </Pressable>
       </View>
+
+      <CamaraFoto
+        visible={camaraAbierta}
+        onCerrar={() => setCamaraAbierta(false)}
+        onFoto={(uriNueva) => {
+          void aplicarFoto(uriNueva);
+        }}
+      />
     </View>
   );
 }

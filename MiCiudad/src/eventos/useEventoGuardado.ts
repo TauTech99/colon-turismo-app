@@ -109,19 +109,24 @@ export function useEventoGuardado(eventoId: string): {
 } {
   const { usuario } = useSesion();
   const usuarioId = usuario?.id ?? null;
-  const [desdeSqlite, setDesdeSqlite] = useState<boolean | null>(null);
+  // Usuario + evento van con el valor: al cambiar no usamos el caché viejo.
+  // Así no hace falta setDesdeSqlite(null) en el efecto (warning de React 19).
+  const [desdeSqlite, setDesdeSqlite] = useState<{
+    usuarioId: string;
+    eventoId: string;
+    guardado: boolean;
+  } | null>(null);
 
   useEffect(() => {
-    let cancelado = false;
-    setDesdeSqlite(null);
     if (!usuarioId || !eventoId) {
       return;
     }
 
+    let cancelado = false;
     leerEventoGuardado(usuarioId, eventoId)
       .then((fila) => {
         if (!cancelado) {
-          setDesdeSqlite(fila !== null);
+          setDesdeSqlite({ usuarioId, eventoId, guardado: fila !== null });
         }
       })
       .catch((error) => {
@@ -133,6 +138,12 @@ export function useEventoGuardado(eventoId: string): {
     };
   }, [usuarioId, eventoId]);
 
+  const cacheCoincide =
+    usuarioId !== null &&
+    Boolean(eventoId) &&
+    desdeSqlite?.usuarioId === usuarioId &&
+    desdeSqlite.eventoId === eventoId;
+
   const consulta = useQuery({
     queryKey:
       usuarioId && eventoId
@@ -140,12 +151,12 @@ export function useEventoGuardado(eventoId: string): {
         : ['evento-guardado', 'sin-sesion'],
     queryFn: () => pedirEventoGuardado(usuarioId as string, eventoId),
     enabled: Boolean(usuarioId) && Boolean(eventoId),
-    placeholderData: desdeSqlite ?? undefined,
+    placeholderData: cacheCoincide ? desdeSqlite.guardado : undefined,
   });
 
   const estaGuardado = consulta.data ?? false;
   const cargando =
-    Boolean(usuarioId) && Boolean(eventoId) && consulta.isPending && desdeSqlite === null;
+    Boolean(usuarioId) && Boolean(eventoId) && consulta.isPending && !cacheCoincide;
 
   async function guardar(evento: Evento): Promise<ResultadoRecordatorio> {
     if (!usuarioId) {
