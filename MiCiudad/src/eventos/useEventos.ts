@@ -162,6 +162,10 @@ export function textoEstado(estado: EstadoEvento): string {
 export const CLAVE_EVENTOS = ['eventos'] as const;
 export const claveEvento = (id: string) => ['evento', id] as const;
 
+// Fuera del hook: siempre el mismo arreglo, así el useMemo no
+// recalcula en cada render mientras no hay datos.
+const SIN_EVENTOS: Evento[] = [];
+
 // queryFn habla con el servicio, no con Axios. Si hay red, pide y
 // guarda en SQLite. Si no hay (o falló) y había filas, se quedan esas.
 async function pedirEventos(): Promise<Evento[]> {
@@ -273,7 +277,7 @@ export function useEventos(): {
     veniaOnline.current = online;
   }, [online, recargarConsulta]);
 
-  const todos = consulta.data ?? [];
+  const todos = consulta.data ?? SIN_EVENTOS;
   const cargando = consulta.isPending && todos.length === 0;
   const error = consulta.isError && todos.length === 0 ? consulta.error.message : null;
 

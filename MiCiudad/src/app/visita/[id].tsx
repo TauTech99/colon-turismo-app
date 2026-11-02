@@ -225,7 +225,9 @@ export default function PantallaVisita() {
   const { dia, hora } = partesFecha(visita.fechaHora);
   const pendiente = !visita.sincronizada;
   const nombreLugar = lugar?.nombre ?? 'Lugar visitado';
-  const fotoVisible = sePuedeMostrarFoto(visita.fotoUri);
+  // Copia local: así TypeScript sabe que, si fotoVisible es true, fotoUri es string.
+  const fotoUri = visita.fotoUri;
+  const fotoVisible = sePuedeMostrarFoto(fotoUri);
   const fotoEnOtroTelefono = fotoSoloEnOtroTelefono(visita.fotoUri);
 
   return (
@@ -239,7 +241,7 @@ export default function PantallaVisita() {
         <View style={[estilos.portada, { backgroundColor: colorCategoria }]}>
           {fotoVisible ? (
             <Image
-              source={{ uri: visita.fotoUri }}
+              source={{ uri: fotoUri }}
               style={StyleSheet.absoluteFill}
               contentFit="cover"
               accessibilityLabel={`Tu foto en ${nombreLugar}`}
@@ -366,7 +368,7 @@ export default function PantallaVisita() {
                 ) : null}
               </View>
               <Image
-                source={{ uri: visita.fotoUri }}
+                source={{ uri: fotoUri }}
                 style={estilos.foto}
                 contentFit="cover"
                 accessibilityLabel={`Tu foto en ${nombreLugar}`}

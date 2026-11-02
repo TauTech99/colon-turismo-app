@@ -16,6 +16,10 @@ export type { FiltrosLugar };
 // El filtro (categoría / texto) NO va en la clave: es en memoria.
 export const CLAVE_LUGARES = ['lugares'] as const;
 
+// Fuera del hook: siempre el mismo arreglo, así el useMemo no
+// recalcula en cada render mientras no hay datos.
+const SIN_LUGARES: Lugar[] = [];
+
 // Igual que la API: minúsculas, sin tildes, espacios colapsados.
 // "colon" tiene que encontrar "Colón".
 function textoBusqueda(valor: string | null | undefined): string {
@@ -121,7 +125,7 @@ export function useLugares(filtros?: FiltrosLugar): {
     veniaOnline.current = online;
   }, [online, recargarConsulta]);
 
-  const todos = consulta.data ?? [];
+  const todos = consulta.data ?? SIN_LUGARES;
   const cargando = consulta.isPending && todos.length === 0;
   const error = consulta.isError && todos.length === 0 ? consulta.error.message : null;
 

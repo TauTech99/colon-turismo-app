@@ -91,6 +91,12 @@ export function EscanerQR({ activo, onLugarListo, enCaja = false }: Props) {
         return;
       }
 
+      // Los cuatro motivos ya volvieron arriba; esto se lo confirma a TypeScript.
+      if (!leido.ok) {
+        liberarBloqueo();
+        return;
+      }
+
       // Éxito: la pantalla registra. No liberamos acá: activo
       // pasa a false mientras guarda (evita doble visita).
       // Si el guardado falla, escanear.tsx remonta este componente

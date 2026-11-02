@@ -170,6 +170,11 @@ export default function PantallaRegistrarVisita() {
       return;
     }
 
+    // Los cuatro motivos ya volvieron arriba; esto se lo confirma a TypeScript.
+    if (!leido.ok) {
+      return;
+    }
+
     setErrorCodigo(null);
     cambiarLugar({ lugar: leido.lugar, detalle: 'Código del cartel' });
   }

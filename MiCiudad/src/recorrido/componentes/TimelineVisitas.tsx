@@ -72,7 +72,9 @@ function ItemVisita({
   const pendiente = !visita.sincronizada;
   const origen = ORIGENES[visita.origen];
   const colorMarca = categoria?.color ?? COLOR_SIN_CATEGORIA;
-  const fotoVisible = sePuedeMostrarFoto(visita.fotoUri);
+  // Copia local: así TypeScript sabe que, si fotoVisible es true, fotoUri es string.
+  const fotoUri = visita.fotoUri;
+  const fotoVisible = sePuedeMostrarFoto(fotoUri);
   const fotoEnOtroTelefono = fotoSoloEnOtroTelefono(visita.fotoUri);
 
   return (
@@ -118,7 +120,7 @@ function ItemVisita({
           // Fondo de la categoría por si el archivo local ya no existe.
           <View style={[estilos.foto, { backgroundColor: colorMarca }]}>
             <Image
-              source={{ uri: visita.fotoUri }}
+              source={{ uri: fotoUri }}
               style={StyleSheet.absoluteFill}
               contentFit="cover"
               accessibilityLabel={`Foto de la visita a ${nombreLugar}`}

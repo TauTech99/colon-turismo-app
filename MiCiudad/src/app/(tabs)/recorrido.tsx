@@ -69,9 +69,13 @@ function ContenidoRecorrido() {
 
   const { visitas, cargando: cargandoLista, error, recargar } = useVisitas();
   const recargarRef = useRef(recargar);
-  recargarRef.current = recargar;
   const [nombresPorLugarId, setNombresPorLugarId] = useState<Record<string, string>>({});
   const [categoriaPorLugarId, setCategoriaPorLugarId] = useState<Record<string, Categoria>>({});
+
+  // La ref se actualiza en un efecto, no durante el render.
+  useEffect(() => {
+    recargarRef.current = recargar;
+  }, [recargar]);
 
   useEffect(() => {
     if (!token) {
