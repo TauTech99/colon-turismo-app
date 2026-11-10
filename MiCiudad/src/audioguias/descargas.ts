@@ -1,8 +1,6 @@
 // Dueño: D — Recorrido y audioguías
 // Cache en disco al abrir con red; play sin señal desde esa copia.
 
-// CÓDIGO VIEJO DEL MOCK (no borrar): copiaba el require() empaquetado.
-// import { Asset } from 'expo-asset';
 import { Directory, File, Paths } from 'expo-file-system';
 
 // Guarda la audioguía en disco para El Palmar / modo avión.
@@ -44,11 +42,6 @@ export function uriLocalSiExiste(url: string): string | null {
 // Asegura una copia en disco y devuelve su uri (file:///…).
 // Baja la URL de la API con File.downloadFileAsync.
 // Si ya estaba guardada, no vuelve a bajar: solo devuelve la uri.
-//
-// --- CÓDIGO VIEJO DEL MOCK (no borrar) ---
-// El 2.º arg era assetId (módulo de require()). Si venía, copiaba el
-// mp3 empaquetado a Paths.document en vez de bajar la URL.
-// export async function asegurarAudioguiaEnDisco(url: string, assetId?: number)
 export async function asegurarAudioguiaEnDisco(url: string): Promise<string | null> {
   const destino = archivoLocal(url);
 
@@ -57,26 +50,6 @@ export async function asegurarAudioguiaEnDisco(url: string): Promise<string | nu
   }
 
   try {
-    // CÓDIGO VIEJO DEL MOCK (no borrar): copiaba el require() empaquetado.
-    // if (assetId !== undefined) {
-    //   // expo-asset deja el archivo en caché del sistema (puede borrarse).
-    //   // Lo copiamos a Paths.document para que quede de antemano.
-    //   const asset = Asset.fromModule(assetId);
-    //   await asset.downloadAsync();
-    //   if (!asset.localUri) {
-    //     console.log('[audioguias] El asset no tiene localUri');
-    //     return null;
-    //   }
-    //   const origen = new File(asset.localUri);
-    //   if (!origen.exists) {
-    //     console.log('[audioguias] No se encontró el asset local');
-    //     return null;
-    //   }
-    //   await origen.copy(destino);
-    //   console.log(`[audioguias] Guardada desde asset ${destino.uri}`);
-    //   return destino.uri;
-    // }
-
     const bajado = await File.downloadFileAsync(url, destino, { idempotent: true });
     console.log(`[audioguias] Descargada ${bajado.uri}`);
     return bajado.uri;

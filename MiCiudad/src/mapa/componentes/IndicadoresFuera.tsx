@@ -42,7 +42,6 @@ const MARGEN_ABAJO = ALTO_INDICADOR / 2 + 36;
 const SEPARACION_MINIMA = 52;
 const COLOR_SIN_CATEGORIA = '#64748B';
 
-// Función pura: misma región y tamaño → mismas flechas.
 export function calcularIndicadores(
   lugares: Lugar[],
   region: Region,

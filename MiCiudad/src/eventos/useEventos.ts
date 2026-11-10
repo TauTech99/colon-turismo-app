@@ -65,9 +65,8 @@ function siguienteDiaColon(clave: string): string {
   return claveDiaEnColon(new Date(inicio.getTime() + 24 * 60 * 60 * 1000));
 }
 
-// Función pura: misma lista → mismos grupos. El hook la usa para
-// armar la agenda. Un evento que cruza medianoche aparece en cada
-// día que toca (R8: peña 21:00–02:00, viernes y sábado).
+// Un evento que cruza medianoche aparece en cada día que toca
+// (R8: peña 21:00–02:00, viernes y sábado).
 export function agruparDesdeHoy(eventos: Evento[], ahora: Date = new Date()): DiaAgenda[] {
   const hoy = claveDiaEnColon(ahora);
   const comienzoHoy = comienzoDelDiaColon(hoy);

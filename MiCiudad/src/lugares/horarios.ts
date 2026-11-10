@@ -99,7 +99,6 @@ function franjaAbierta(lugar: Lugar, ahora: Date): Horario | null {
   return deAyer ?? null;
 }
 
-// Función pura: mismos argumentos → mismo resultado.
 // No mira el reloj sola: recibe `ahora` para poder probarla con cualquier fecha.
 export function estaAbiertoAhora(lugar: Lugar, ahora: Date): boolean {
   if (!lugar.activo) {

@@ -31,7 +31,6 @@ function textoBusqueda(valor: string | null | undefined): string {
     .trim();
 }
 
-// Función pura: misma entrada → misma salida. No habla con la red.
 // El hook la usa cada vez que cambian la categoría o el texto.
 export function filtrarLugares(lugares: Lugar[], filtros?: FiltrosLugar): Lugar[] {
   const categoriaId = filtros?.categoriaId ?? null;

@@ -19,7 +19,6 @@ export function rumboDelTelefono(x: number, y: number): number {
 
 // Ángulo desde `desde` hacia `hasta`, en grados.
 // 0 = el lugar queda al norte, 90 = al este, 180 = al sur, 270 = al oeste.
-// Es una función pura: mismos puntos → mismo número. No pide GPS ni sensor.
 export function anguloHaciaLugar(desde: Coordenadas, hasta: Coordenadas): number {
   const latDesde = aRadianes(desde.latitud);
   const latHasta = aRadianes(hasta.latitud);

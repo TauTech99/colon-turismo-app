@@ -14,7 +14,6 @@ export type ResultadoQr =
   | { ok: false; motivo: 'inactivo'; nombre: string }
   | { ok: false; motivo: 'sin-cartel'; nombre: string };
 
-// Función pura: no habla con la cámara ni con SQLite.
 // "COLON:lug-004" → "lug-004". WhatsApp / menú → null.
 export function parsearQr(texto: string): string | null {
   const limpio = texto.trim();

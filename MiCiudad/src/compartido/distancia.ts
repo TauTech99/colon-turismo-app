@@ -12,8 +12,6 @@ function aRadianes(grados: number): number {
 }
 
 // Metros en línea recta entre dos puntos (latitud / longitud).
-// Es una función pura: mismos números → mismo resultado.
-// No pide GPS ni importa mocks.
 // La usan el mapa, Cerca tuyo y el detalle (PRD §7.2).
 export function distanciaMetros(a: Coordenadas, b: Coordenadas): number {
   const latA = aRadianes(a.latitud);

@@ -6,7 +6,6 @@ import axios from 'axios';
 
 import { borrarSesion, leerToken } from '@/cuenta/secure-store';
 import type { ErrorApi, Respuesta } from '@/tipos/api';
-// CÓDIGO VIEJO DEL MOCK (no borrar): también importaba Meta para responderMock.
 
 export type MetodoHttp = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -29,49 +28,6 @@ export const ERROR_RED: ErrorApi = {
   codigo: 'ERROR_RED',
   mensaje: 'No hay conexión. Probá de nuevo en un rato.',
 };
-
-// --- CÓDIGO VIEJO DEL MOCK (no borrar) ---
-// Antes de la API, los servicios devolvían datos de mocks/ con delay.
-// Ya no se llama: el camino vivo es pedir() más abajo.
-//
-// Cómo se comporta el mock. Se cambiaba a mano para la demo:
-//   "normal" → datos de mocks/
-//   "vacio"  → listas vacías (para probar la pantalla vacía)
-//   "error"  → error de red (para probar la pantalla de error)
-// export type EscenarioMock = 'normal' | 'vacio' | 'error';
-//
-// export const ESCENARIO_MOCK: EscenarioMock = 'normal';
-//
-// function esperar(milisegundos: number): Promise<void> {
-//   return new Promise((resolver) => {
-//     setTimeout(resolver, milisegundos);
-//   });
-// }
-//
-// // Espera entre 300 y 800 ms para que las pantallas ya se sientan "de red".
-// export async function esperarMock(): Promise<void> {
-//   const extra = Math.floor(Math.random() * 501);
-//   await esperar(300 + extra);
-// }
-//
-// // Arma el sobre {datos, meta}. Si el escenario es error o vacío, lo fuerza acá
-// // para no repetirlo en cada servicio.
-// export async function responderMock<T>(datos: T, meta: Meta | null = null): Promise<Respuesta<T>> {
-//   await esperarMock();
-//
-//   if (ESCENARIO_MOCK === 'error') {
-//     return { error: ERROR_RED };
-//   }
-//
-//   if (ESCENARIO_MOCK === 'vacio' && Array.isArray(datos)) {
-//     return {
-//       datos: [] as T,
-//       meta: { total: 0, pagina: 1, porPagina: 20 },
-//     };
-//   }
-//
-//   return { datos, meta };
-// }
 
 function esSobre<T>(valor: unknown): valor is Respuesta<T> {
   if (!valor || typeof valor !== 'object') {
