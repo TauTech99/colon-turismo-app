@@ -3,7 +3,7 @@
 
 import { Platform } from 'react-native';
 
-import { cargarNotificaciones, pedirPermisoNotificaciones } from '@/compartido/notificaciones';
+import { cargarNotificaciones, hayPermisoNotificaciones, pedirPermisoNotificaciones } from '@/compartido/notificaciones';
 import { leerIdsEventosGuardados } from '@/eventos/eventosDb';
 import { agendarRecordatorio, MINUTOS_ANTES_RECORDATORIO, revisarCambiosDeEstado } from '@/eventos/recordatorios';
 import { crearEvento } from '@/pruebas/fabricas';
@@ -11,6 +11,7 @@ import { crearEvento } from '@/pruebas/fabricas';
 jest.mock('@/compartido/notificaciones', () => ({
   CANAL_EVENTOS: 'eventos',
   cargarNotificaciones: jest.fn(),
+  hayPermisoNotificaciones: jest.fn(),
   pedirPermisoNotificaciones: jest.fn(),
 }));
 jest.mock('@/eventos/eventosDb', () => ({ leerIdsEventosGuardados: jest.fn() }));
@@ -31,6 +32,7 @@ beforeEach(() => {
   jest.spyOn(console, 'log').mockImplementation(() => {});
   jest.mocked(cargarNotificaciones).mockResolvedValue(Notificaciones as unknown as ModuloNotificaciones);
   jest.mocked(pedirPermisoNotificaciones).mockResolvedValue(true);
+  jest.mocked(hayPermisoNotificaciones).mockResolvedValue(true);
   Notificaciones.scheduleNotificationAsync.mockResolvedValue('id');
   Notificaciones.cancelScheduledNotificationAsync.mockResolvedValue(undefined);
 });
@@ -138,6 +140,34 @@ describe('revisarCambiosDeEstado', () => {
     await revisarCambiosDeEstado([cancelado], [cancelado]);
 
     expect(Notificaciones.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
+
+  test('si un evento guardado suspendido vuelve a programado, el recordatorio vuelve sin pedir permiso', async () => {
+    jest.mocked(leerIdsEventosGuardados).mockResolvedValue(['evt-15']);
+
+    await revisarCambiosDeEstado([crearEvento({ id: 'evt-15', estado: 'suspendido' })], [crearEvento({ id: 'evt-15' })]);
+
+    expect(Notificaciones.scheduleNotificationAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ identifier: 'recordatorio:evt-15' }),
+    );
+    // Refrescar la agenda no es un toque de la persona: no abre el cartel del permiso.
+    expect(pedirPermisoNotificaciones).not.toHaveBeenCalled();
+    expect(hayPermisoNotificaciones).toHaveBeenCalled();
+  });
+
+  test('si se reprograma y vuelve a suspenderse, avisa otra vez', async () => {
+    jest.mocked(leerIdsEventosGuardados).mockResolvedValue(['evt-16']);
+    const programado = crearEvento({ id: 'evt-16' });
+    const suspendido = crearEvento({ id: 'evt-16', estado: 'suspendido' });
+
+    await revisarCambiosDeEstado([programado], [suspendido]);
+    await revisarCambiosDeEstado([suspendido], [programado]);
+    await revisarCambiosDeEstado([programado], [suspendido]);
+
+    const avisosDeSuspension = Notificaciones.scheduleNotificationAsync.mock.calls.filter(
+      ([pedido]) => pedido.content.title === 'Se suspendió Peña',
+    );
+    expect(avisosDeSuspension).toHaveLength(2);
   });
 
   test('si no puede leer los guardados, no rompe', async () => {
