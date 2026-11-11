@@ -125,6 +125,16 @@ describe('revisarCambiosDeEstado', () => {
     );
   });
 
+  test('el aviso de suspensión no abre el cartel del permiso: si no hay permiso, no avisa', async () => {
+    jest.mocked(leerIdsEventosGuardados).mockResolvedValue(['evt-17']);
+    jest.mocked(hayPermisoNotificaciones).mockResolvedValue(false);
+
+    await revisarCambiosDeEstado([crearEvento({ id: 'evt-17' })], [crearEvento({ id: 'evt-17', estado: 'suspendido' })]);
+
+    expect(pedirPermisoNotificaciones).not.toHaveBeenCalled();
+    expect(Notificaciones.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
+
   test('no avisa de eventos que la persona no guardó', async () => {
     jest.mocked(leerIdsEventosGuardados).mockResolvedValue(['otro']);
 

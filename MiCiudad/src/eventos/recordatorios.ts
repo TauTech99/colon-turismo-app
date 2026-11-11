@@ -140,7 +140,8 @@ async function avisarCancelacionOSuspension(evento: Evento): Promise<void> {
     return;
   }
 
-  const permitido = await pedirPermisoNotificaciones();
+  // Sale de un refresco de la agenda, no de un toque: solo consulta el permiso.
+  const permitido = await hayPermisoNotificaciones();
   if (!permitido) {
     console.log('[recordatorios] Sin permiso. No se pudo mostrar el aviso.');
     return;
