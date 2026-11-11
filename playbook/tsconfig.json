@@ -1,0 +1,18 @@
+{
+  // Solo para revisar tipos: Node 24 corre los .ts directo, sin compilar.
+  // npx --prefix MiCiudad tsc -p playbook
+  "compilerOptions": {
+    "target": "es2024",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "allowImportingTsExtensions": true,
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["node"],
+    "typeRoots": ["../MiCiudad/node_modules/@types", "../api-mi-ciudad/node_modules/@types"]
+  },
+  "include": ["**/*.ts"]
+}
