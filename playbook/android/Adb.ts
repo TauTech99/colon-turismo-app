@@ -86,6 +86,17 @@ export class Adb {
     await this.terminal.ejecutar(this.programa, ['-s', serial, 'emu', 'geo', 'fix', String(longitud), String(latitud)], { sinSalida: true });
   }
 
+  // Solo emulador: qué AVD es ("MiCiudad_Pixel").
+  async nombreAvd(serial: string): Promise<string | null> {
+    const { codigo, salida } = await this.terminal.consultar(this.programa, ['-s', serial, 'emu', 'avd', 'name']);
+    return codigo === 0 ? (salida.split(/\r?\n/)[0]?.trim() ?? null) : null;
+  }
+
+  // Solo emulador: lo apaga.
+  async apagarEmulador(serial: string): Promise<void> {
+    await this.terminal.ejecutar(this.programa, ['-s', serial, 'emu', 'kill'], { sinSalida: true });
+  }
+
   // Celu real: deja que Maestro simule el GPS.
   async permitirUbicacionSimulada(serial: string): Promise<void> {
     await this.terminal.consultar(this.programa, ['-s', serial, 'shell', 'appops', 'set', 'dev.mobile.maestro', 'android:mock_location', 'allow']);

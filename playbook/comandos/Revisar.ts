@@ -1,6 +1,8 @@
 // Revisa que la compu tenga todo lo necesario, sin cambiar nada.
 
 import type { Adb } from '../android/Adb.ts';
+import { Avd } from '../android/Avd.ts';
+import { nombreAndroid } from '../android/RecomendacionEmulador.ts';
 import type { Emulador } from '../android/Emulador.ts';
 import type { Consola } from '../nucleo/Consola.ts';
 import type { Plataforma } from '../nucleo/Plataforma.ts';
@@ -124,7 +126,15 @@ export class Revisar extends Comando {
         opcional: true,
       },
       { nombre: 'Android (adb)', ok: adb, detalle: adb ? 'listo' : 'no está', comoSeArregla: this.plataforma.comoInstalar('android') },
-      { nombre: 'Emulador', ok: avds.length > 0, detalle: avds.length ? avds.join(', ') : 'ninguno creado', opcional: true, comoSeArregla: 'Android Studio → Device Manager → Create device' },
+      {
+        nombre: 'Emulador',
+        ok: avds.length > 0,
+        detalle: avds.length
+          ? avds.map((nombre) => `${nombre} (${new Avd(this.plataforma.carpetaAvds(), nombre).descripcion(nombreAndroid)})`).join(', ')
+          : 'ninguno creado',
+        opcional: true,
+        comoSeArregla: 'Corré "emulador": lo crea con los valores recomendados',
+      },
       { nombre: 'scrcpy (ver pantalla)', ok: scrcpy, detalle: scrcpy ? 'listo' : 'no está', opcional: true, comoSeArregla: this.plataforma.comoInstalar('scrcpy') },
       { nombre: 'Maestro (E2E)', ok: maestro, detalle: maestro ? 'listo' : 'no está', opcional: true, comoSeArregla: this.plataforma.comoInstalar('maestro') },
     ];

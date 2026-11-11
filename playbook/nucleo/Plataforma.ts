@@ -39,6 +39,19 @@ export class Plataforma {
     return join(carpetaAndroid, this.esWindows ? 'gradlew.bat' : 'gradlew');
   }
 
+  // sdkmanager, avdmanager: en Windows son .bat.
+  script(nombre: string): string {
+    return this.esWindows ? `${nombre}.bat` : nombre;
+  }
+
+  // Donde Android Studio guarda los emuladores creados.
+  carpetaAvds(): string {
+    if (process.env.ANDROID_AVD_HOME) {
+      return process.env.ANDROID_AVD_HOME;
+    }
+    return join(process.env.ANDROID_USER_HOME ?? join(homedir(), '.android'), 'avd');
+  }
+
   carpetaSdkAndroid(): string | null {
     const candidatas = [
       process.env.ANDROID_HOME,

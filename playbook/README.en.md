@@ -19,17 +19,18 @@ It only needs **Node 24** (the same the API asks for). It installs nothing extra
 | 2 | Preparar el proyecto (set up) | First time: `.env`, dependencies and demo data. |
 | 3 | Levantar todo y abrir la app (start everything) | The everyday one: API + Metro + phone or emulator, and opens the app. Ctrl+C stops everything. |
 | 4 | Instalar la app (install) | Builds and installs the development build, or installs an APK (for example the EAS preview). |
-| 5 | Ver el celu en la compu (show the phone) | Opens the phone screen in a window, to share it during the defense. |
-| 6 | Correr los tests (run the tests) | Jest (app), Vitest (API) and the Maestro end-to-end flows. |
-| 7 | Volver los datos a cero (reset data) | Back to the demo data before a demo. |
-| 8 | Ver la documentación (docs) | Opens all the project documentation in the browser. |
-| 9 | Glosario (glossary) | What each command does and what it runs behind the scenes. |
+| 5 | Configurar el emulador (set up the emulator) | Creates one with the app's Android version and RAM and cores sized to your computer, adjusts an existing one or wipes its data. |
+| 6 | Ver el celu en la compu (show the phone) | Opens the phone screen in a window, to share it during the defense. |
+| 7 | Correr los tests (run the tests) | Jest (app), Vitest (API) and the Maestro end-to-end flows. |
+| 8 | Volver los datos a cero (reset data) | Back to the demo data before a demo. |
+| 9 | Ver la documentación (docs) | Opens all the project documentation in the browser. |
+| 10 | Glosario (glossary) | What each command does and what it runs behind the scenes. |
 
 ## First time
 
 1. **Revisar**: install whatever shows in red.
 2. **Preparar**: it asks for the Google Maps key. Ask the team for it privately and never commit it.
-3. Connect the phone over USB with **USB debugging** turned on (or have an emulator created in Android Studio).
+3. Connect the phone over USB with **USB debugging** turned on, or create an emulator with **Configurar el emulador**.
 4. **Instalar**: takes about 10 minutes the first time.
 5. **Levantar**.
 
@@ -51,7 +52,18 @@ node playbook/playbook.ts revisar
 node playbook/playbook.ts levantar --simular   # shows what it would do, changes nothing
 ```
 
-Commands: `revisar`, `preparar`, `levantar`, `instalar`, `pantalla`, `tests`, `reiniciar`, `docs`, `glosario`.
+Commands: `revisar`, `preparar`, `levantar`, `instalar`, `emulador`, `pantalla`, `tests`, `reiniciar`, `docs`, `glosario`.
+
+## The recommended emulator
+
+| What | Value | Why |
+|---|---|---|
+| Android | 16 (API 36), with Play Store | It is the version the app is built against. Preview versions fail for reasons unrelated to the code; Play Store is needed for Google Maps and mock-GPS apps. |
+| RAM | 4 GB if the computer has 16 GB or more; 3 GB with 8 to 16 GB; 2 GB below that | With 2 GB Android stops responding; above 4 GB it takes memory away from Metro, the API and Gradle. Below 8 GB, a phone over USB is a better choice. |
+| Cores | Half of the computer's, up to 4 | Enough for the emulator without slowing the rest. |
+| CPU | x86_64 (Intel/AMD) or arm64 (Apple Silicon, Linux ARM) | So it runs with acceleration. |
+
+The Android version of an existing emulator cannot be changed (it is tied to its image): to change it, create a new one.
 
 ## How the phone connects
 
@@ -127,7 +139,7 @@ Object-oriented: each class has a single responsibility. Dependency-free TypeScr
 | `Menu.ts` | The numbered menu. |
 | `comandos/` | One class per option. All extend `Comando`, which holds the name, what it does and what it runs behind the scenes (in Spanish and English): the menu, the glossary and the documentation come from there. |
 | `nucleo/` | `Consola` (print and ask), `Terminal` (run programs), `Plataforma` (Windows/Linux differences), `Proyecto` (paths and ports), `ArchivoEnv` (read and change a `.env` without printing values) and `Configuracion`. |
-| `android/` | `Adb` (phone and emulator), `Emulador` (AVD) and `SelectorDeDispositivo`. |
+| `android/` | `Adb` (phone and emulator), `Emulador` (starting it), `Avd` (its settings), `HerramientasSdk` (sdkmanager and avdmanager), `RecomendacionEmulador` (values for your computer) and `SelectorDeDispositivo`. |
 | `servicios/` | `Api`, `App`, `Metro`, `Java` and `PuenteTcp` (port forwarding for Windows). |
 | `documentacion/` | `Markdown` (to HTML), `SitioDeDocumentacion` (collects the documents) and `PaginaHtml` (draws the page: index, language, theme and diagram viewer). |
 

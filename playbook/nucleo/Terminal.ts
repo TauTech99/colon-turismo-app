@@ -14,6 +14,8 @@ export type Opciones = {
   env?: Record<string, string>;
   // Para comandos con respuesta técnica que no aporta (adb monkey, geo fix).
   sinSalida?: boolean;
+  // Lo que se le "escribe" al programa cuando pregunta (avdmanager pregunta por el hardware).
+  entrada?: string;
 };
 
 export type Resultado = { codigo: number; salida: string };
@@ -127,7 +129,11 @@ export class Terminal {
   private correr(programa: string, argumentos: string[], opciones: Opciones, mostrar: boolean): Promise<Resultado> {
     return new Promise((resolver) => {
       let salida = '';
-      const proceso = this.lanzar(programa, argumentos, opciones, ['ignore', 'pipe', 'pipe'], false);
+      const entrada = opciones.entrada === undefined ? 'ignore' : 'pipe';
+      const proceso = this.lanzar(programa, argumentos, opciones, [entrada, 'pipe', 'pipe'], false);
+      if (opciones.entrada !== undefined) {
+        proceso.stdin?.end(opciones.entrada);
+      }
       const juntar = (parte: Buffer) => {
         const texto = parte.toString();
         salida += texto;
@@ -160,7 +166,7 @@ export class Terminal {
   }
 
   private citar(parte: string): string {
-    return /[\s"&|<>^()]/.test(parte) ? `"${parte.replace(/"/g, '""')}"` : parte;
+    return /[\s"&|<>^();,]/.test(parte) ? `"${parte.replace(/"/g, '""')}"` : parte;
   }
 
   private comoTexto(programa: string, argumentos: string[], opciones: Opciones): string {

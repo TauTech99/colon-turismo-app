@@ -8,8 +8,11 @@ import { fileURLToPath } from 'node:url';
 
 import { Adb } from './android/Adb.ts';
 import { Emulador } from './android/Emulador.ts';
+import { HerramientasSdk } from './android/HerramientasSdk.ts';
+import { RecomendacionEmulador } from './android/RecomendacionEmulador.ts';
 import { SelectorDeDispositivo } from './android/SelectorDeDispositivo.ts';
 import { RegistroDeComandos } from './comandos/Comando.ts';
+import { ConfigurarEmulador } from './comandos/ConfigurarEmulador.ts';
 import { CorrerTests } from './comandos/CorrerTests.ts';
 import { Glosario } from './comandos/Glosario.ts';
 import { Instalar } from './comandos/Instalar.ts';
@@ -63,6 +66,17 @@ async function main(argumentos: string[]): Promise<number> {
   registro.agregar(new Preparar({ consola, proyecto, api, app }));
   registro.agregar(new Levantar({ consola, plataforma, terminal, proyecto, configuracion, selector, adb, api, metro, instalar }));
   registro.agregar(instalar);
+  registro.agregar(
+    new ConfigurarEmulador({
+      consola,
+      plataforma,
+      terminal,
+      adb,
+      emulador,
+      sdk: new HerramientasSdk(terminal, plataforma),
+      recomendacion: new RecomendacionEmulador(),
+    }),
+  );
   registro.agregar(new VerPantalla({ consola, terminal, plataforma, selector }));
   registro.agregar(new CorrerTests({ consola, terminal, plataforma, proyecto, selector, adb, api, app }));
   registro.agregar(new ReiniciarDatos({ consola, api }));
