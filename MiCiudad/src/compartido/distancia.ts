@@ -30,10 +30,12 @@ export function distanciaMetros(a: Coordenadas, b: Coordenadas): number {
 // Texto para la UI, en español: "900 m" o "1,1 km".
 // La coma es el decimal de Valeria (wireframe §8.1).
 export function formatearDistancia(metros: number): string {
-  if (metros < 1000) {
-    return `${Math.round(metros)} m`;
+  // Se redondea antes de elegir la unidad: 999,6 m es "1 km", no "1000 m".
+  const enteros = Math.round(metros);
+  if (enteros < 1000) {
+    return `${enteros} m`;
   }
 
-  const km = Math.round((metros / 1000) * 10) / 10;
+  const km = Math.round(metros / 100) / 10;
   return `${String(km).replace('.', ',')} km`;
 }

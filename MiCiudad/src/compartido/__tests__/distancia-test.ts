@@ -54,4 +54,8 @@ describe('formatearDistancia', () => {
   ])('desde un kilómetro va en km con coma decimal: %p → %p', (metros, texto) => {
     expect(formatearDistancia(metros)).toBe(texto);
   });
+
+  test('lo que redondea a 1000 m ya se muestra como "1 km"', () => {
+    expect(formatearDistancia(999.6)).toBe('1 km');
+  });
 });
