@@ -1,0 +1,11 @@
+# Subflujo: después de reabrir la app con la tarea de fondo del aviso andando, React Native
+# muestra en desarrollo una advertencia de expo-task-manager unos segundos más tarde.
+# Se espera a que aparezca y se cierra; si no aparece, sigue (solo build de desarrollo).
+appId: com.miciudad.colon
+---
+- tapOn:
+    text: "Open debugger to view warnings"
+    optional: true
+- tapOn:
+    text: "Dismiss"
+    optional: true

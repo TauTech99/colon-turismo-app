@@ -1,0 +1,43 @@
+# Mapa (C): abre sin cuenta con el GPS en la Plaza San Martín de Colón, filtra por categoría
+# y entra a la ficha de un lugar.
+appId: com.miciudad.colon
+name: Mapa, filtros y ficha de lugar
+tags: [parte-c]
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+- setLocation:
+    latitude: -32.2236
+    longitude: -58.1427
+- extendedWaitUntil:
+    visible: "Colón, Entre Ríos"
+    timeout: 30000
+- assertVisible: "Mapa de lugares de Colón"
+- extendedWaitUntil:
+    visible: "Feria de la Plaza San Martín, 0 m.*"
+    timeout: 30000
+- assertVisible: "Ciudad sobre el río Uruguay · .* lugares turísticos"
+- tapOn: "Termas"
+- assertVisible: "MÁS CERCANOS A VOS"
+- tapOn: "Todas las categorías"
+- scrollUntilVisible:
+    element: "Ver todos los lugares"
+    direction: DOWN
+- tapOn: "Ver todos los lugares"
+- tapOn: "Buscar por nombre"
+- inputText: "Palmar"
+- tapOn: "Parque Nacional El Palmar.*"
+- extendedWaitUntil:
+    visible: "Naturaleza"
+    timeout: 15000
+- assertVisible: "Todos los días .*"
+- assertVisible: "Foto de Parque Nacional El Palmar"
+- scrollUntilVisible:
+    element: "Audioguía · Parque Nacional El Palmar"
+    direction: DOWN
+- takeScreenshot: evidencia/01-ficha-lugar
+- back
+- back
+- assertVisible: "Colón, Entre Ríos"

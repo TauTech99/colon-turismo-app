@@ -1,0 +1,57 @@
+# Aviso al acercarme (C): prender y apagar el switch deja la app estable
+# (el arreglo corta el GPS aunque se apague mientras arranca).
+# Requiere la sesión del flujo 04 (usuario de demo).
+appId: com.miciudad.colon
+name: Aviso de proximidad
+tags: [parte-c, cuenta]
+env:
+  CLAVE: nuevo1234
+---
+- launchApp
+- runFlow:
+    file: subflujos/esperar-aviso-dev.yaml
+# Enlace directo: el cartel de desarrollo puede tapar la pestaña.
+- openLink: miciudad://yo
+- extendedWaitUntil:
+    visible: "Usar contraseña|Hola, .*|Notificaciones.*"
+    timeout: 15000
+- runFlow:
+    file: subflujos/desbloquear.yaml
+- extendedWaitUntil:
+    visible: "Notificaciones.*"
+    timeout: 15000
+- runFlow:
+    when:
+      notVisible: "Aviso al acercarme apagado"
+    commands:
+      - tapOn: "Notificaciones.*"
+      - tapOn: "Avisar cuando esté cerca de un lugar"
+      - extendedWaitUntil:
+          visible: "Aviso al acercarme apagado"
+          timeout: 15000
+- runFlow:
+    when:
+      notVisible: "Avisar cuando esté cerca de un lugar"
+    commands:
+      - tapOn: "Notificaciones.*"
+- tapOn: "Avisar cuando esté cerca de un lugar"
+- extendedWaitUntil:
+    visible: "Listo, te vamos a avisar|Va a avisarte solo con la app abierta"
+    timeout: 15000
+- takeScreenshot: evidencia/06-aviso-prendido
+- tapOn: "OK"
+# Apagar, prender y volver a apagar: el caso del GPS que quedaba vivo.
+- tapOn: "Avisar cuando esté cerca de un lugar"
+- tapOn: "Avisar cuando esté cerca de un lugar"
+- extendedWaitUntil:
+    visible: "OK"
+    timeout: 15000
+- tapOn: "OK"
+- tapOn: "Avisar cuando esté cerca de un lugar"
+- extendedWaitUntil:
+    visible: "Aviso al acercarme apagado"
+    timeout: 15000
+- runFlow:
+    file: subflujos/cerrar-aviso-dev.yaml
+- tapOn: ".*Mapa"
+- assertVisible: "Colón, Entre Ríos"

@@ -1,0 +1,32 @@
+# Agenda (C): días agrupados y detalle de un evento programado (EVENTO: uno futuro de los datos de demo).
+appId: com.miciudad.colon
+name: Agenda y detalle de evento
+tags: [parte-c]
+env:
+  EVENTO: Feria de artesanos en la plaza
+---
+- launchApp
+- runFlow:
+    file: subflujos/cerrar-aviso-dev.yaml
+- tapOn: ".*Agenda"
+- extendedWaitUntil:
+    visible: "Qué hacer"
+    timeout: 15000
+- extendedWaitUntil:
+    visible: "Hoy|Mañana|.*, [0-9]+ de .*"
+    timeout: 20000
+- scrollUntilVisible:
+    element: "${EVENTO}.*"
+    direction: DOWN
+- takeScreenshot: evidencia/03-agenda
+- tapOn: "${EVENTO}.*"
+- extendedWaitUntil:
+    visible: "Cuándo"
+    timeout: 15000
+- assertVisible: "Dónde"
+- assertVisible: "Precio"
+- scrollUntilVisible:
+    element: "Avisarme cuando empiece"
+    direction: DOWN
+- takeScreenshot: evidencia/03-evento
+- back

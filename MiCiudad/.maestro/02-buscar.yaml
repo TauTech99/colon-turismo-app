@@ -1,0 +1,21 @@
+# Lista completa y buscador: escribir filtra y "sin resultados" se ve en pantalla.
+appId: com.miciudad.colon
+name: Buscar lugares
+tags: [parte-c]
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Colón, Entre Ríos"
+    timeout: 30000
+- scrollUntilVisible:
+    element: "Ver todos los lugares"
+    direction: DOWN
+- tapOn: "Ver todos los lugares"
+- tapOn: "Buscar por nombre"
+- inputText: "Molino"
+- assertVisible: "Molino Forclaz"
+- eraseText: 10
+- inputText: "zzzz"
+- assertVisible: "No hay lugares que coincidan."
+- takeScreenshot: evidencia/02-buscar-vacio
+- back

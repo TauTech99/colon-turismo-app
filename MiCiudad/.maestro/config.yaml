@@ -1,0 +1,13 @@
+# Orden fijo: 01 arranca con la app limpia; 06 usa la sesión que deja 04.
+flows:
+  - "*.yaml"
+executionOrder:
+  continueOnFailure: true
+  flowsOrder:
+    - 01-mapa-y-ficha
+    - 02-buscar
+    - 03-agenda-y-evento
+    - 04-avisarme-con-cuenta
+    - 05-sin-conexion
+    - 06-aviso-de-proximidad
+    - 07-aviso-llega-en-colon
