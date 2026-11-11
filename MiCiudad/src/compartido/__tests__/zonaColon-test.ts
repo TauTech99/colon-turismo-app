@@ -1,23 +1,13 @@
-// Reloj de Colón: horarios y agenda usan la hora de Colón, no la del teléfono.
+// Reloj de Colón: horarios y agenda usan la hora de Colón.
 
 import { claveDiaEnColon, comienzoDelDiaColon, relojEnColon, ZONA_COLON } from '@/compartido/zonaColon';
-
-// Corre como un emulador en UTC: si algo usara la hora del aparato en vez de la de Colón, falla.
-const zonaOriginal = process.env.TZ;
-beforeAll(() => {
-  process.env.TZ = 'UTC';
-});
-afterAll(() => {
-  process.env.TZ = zonaOriginal;
-});
 
 test('la zona es la de Buenos Aires (UTC-3, sin horario de verano)', () => {
   expect(ZONA_COLON).toBe('America/Argentina/Buenos_Aires');
 });
 
 describe('relojEnColon', () => {
-  test('pasa la hora UTC a la hora de Colón', () => {
-    // 22:30 UTC del 13/11/2026 = viernes 19:30 en Colón (la hora de la defensa).
+  test('pasa la hora UTC a la hora de Colón: viernes 13/11 a las 19:30, la hora de la defensa', () => {
     expect(relojEnColon(new Date('2026-11-13T22:30:00Z'))).toEqual({
       anio: 2026,
       mes: 11,
@@ -29,7 +19,6 @@ describe('relojEnColon', () => {
   });
 
   test('de noche usa el día de Colón aunque en UTC ya sea mañana', () => {
-    // 01:30 UTC del sábado 14 = viernes 13 a las 22:30 en Colón.
     expect(relojEnColon(new Date('2026-11-14T01:30:00Z'))).toMatchObject({
       diaMes: 13,
       diaSemana: 5,

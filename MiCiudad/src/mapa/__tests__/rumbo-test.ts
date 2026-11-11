@@ -2,13 +2,10 @@
 // Brújula: rumbo del teléfono, ángulo hacia el lugar y cuánto girar la flecha.
 
 import { anguloHaciaLugar, rotacionFlecha, rumboDelTelefono } from '@/mapa/rumbo';
+import { CENTRO_COLON } from '@/pruebas/fabricas';
 
-// Centro de Colón, aproximado.
-const CENTRO = { latitud: -32.2236, longitud: -58.1419 };
-
-describe('rumboDelTelefono (magnetómetro → grados)', () => {
+describe('rumboDelTelefono (magnetómetro en μT → grados)', () => {
   test.each([
-    // x, y (μT) → rumbo
     [0, 30, 0],
     [-30, 0, 90],
     [0, -30, 180],
@@ -33,12 +30,12 @@ describe('rumboDelTelefono (magnetómetro → grados)', () => {
 
 describe('anguloHaciaLugar', () => {
   test.each([
-    ['norte', { latitud: CENTRO.latitud + 0.01, longitud: CENTRO.longitud }, 0],
-    ['este', { latitud: CENTRO.latitud, longitud: CENTRO.longitud + 0.01 }, 90],
-    ['sur', { latitud: CENTRO.latitud - 0.01, longitud: CENTRO.longitud }, 180],
-    ['oeste', { latitud: CENTRO.latitud, longitud: CENTRO.longitud - 0.01 }, 270],
+    ['norte', { latitud: CENTRO_COLON.latitud + 0.01, longitud: CENTRO_COLON.longitud }, 0],
+    ['este', { latitud: CENTRO_COLON.latitud, longitud: CENTRO_COLON.longitud + 0.01 }, 90],
+    ['sur', { latitud: CENTRO_COLON.latitud - 0.01, longitud: CENTRO_COLON.longitud }, 180],
+    ['oeste', { latitud: CENTRO_COLON.latitud, longitud: CENTRO_COLON.longitud - 0.01 }, 270],
   ])('un lugar al %s da %p°', (_nombre, lugar, angulo) => {
-    expect(anguloHaciaLugar(CENTRO, lugar)).toBeCloseTo(angulo, 1);
+    expect(anguloHaciaLugar(CENTRO_COLON, lugar)).toBeCloseTo(angulo, 1);
   });
 });
 

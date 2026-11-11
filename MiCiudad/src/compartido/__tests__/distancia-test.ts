@@ -2,33 +2,36 @@
 // Distancia (Haversine) y el texto que ve el turista: "900 m" o "1,1 km".
 
 import { distanciaMetros, formatearDistancia } from '@/compartido/distancia';
+import { CENTRO_COLON } from '@/pruebas/fabricas';
 
-// Centro de Colón, aproximado. Alcanza para medir distancias cortas.
-const CENTRO = { latitud: -32.2236, longitud: -58.1419 };
+const METROS_POR_GRADO = (Math.PI * 6_371_000) / 180;
+
+function aRadianes(grados: number): number {
+  return (grados * Math.PI) / 180;
+}
 
 describe('distanciaMetros', () => {
   test('da 0 si los dos puntos son el mismo', () => {
-    expect(distanciaMetros(CENTRO, CENTRO)).toBe(0);
+    expect(distanciaMetros(CENTRO_COLON, CENTRO_COLON)).toBe(0);
   });
 
-  test('un grado de latitud son unos 111,19 km', () => {
-    // π · 6 371 000 / 180 = 111 194,93 m (el radio que usa la app)
+  test('un grado de latitud mide lo que dice la fórmula con el radio de la app', () => {
     const metros = distanciaMetros({ latitud: 0, longitud: 0 }, { latitud: 1, longitud: 0 });
-    expect(metros).toBeCloseTo(111_194.93, 1);
+    expect(metros).toBeCloseTo(METROS_POR_GRADO, 1);
   });
 
   test('da lo mismo de ida que de vuelta', () => {
     const termas = { latitud: -32.2009, longitud: -58.1556 };
-    expect(distanciaMetros(CENTRO, termas)).toBeCloseTo(distanciaMetros(termas, CENTRO), 6);
+    expect(distanciaMetros(CENTRO_COLON, termas)).toBeCloseTo(distanciaMetros(termas, CENTRO_COLON), 6);
   });
 
   test('a la latitud de Colón, un paso al este mide menos que uno al norte', () => {
-    // Los meridianos se juntan hacia el polo: el grado de longitud vale cos(lat) veces el de latitud.
-    const alNorte = distanciaMetros(CENTRO, { ...CENTRO, latitud: CENTRO.latitud + 0.001 });
-    const alEste = distanciaMetros(CENTRO, { ...CENTRO, longitud: CENTRO.longitud + 0.001 });
+    const paso = 0.001;
+    const alNorte = distanciaMetros(CENTRO_COLON, { ...CENTRO_COLON, latitud: CENTRO_COLON.latitud + paso });
+    const alEste = distanciaMetros(CENTRO_COLON, { ...CENTRO_COLON, longitud: CENTRO_COLON.longitud + paso });
 
-    expect(alNorte).toBeCloseTo(111.19, 1);
-    expect(alEste).toBeCloseTo(94.1, 0);
+    expect(alNorte).toBeCloseTo(METROS_POR_GRADO * paso, 1);
+    expect(alEste).toBeCloseTo(alNorte * Math.cos(aRadianes(CENTRO_COLON.latitud)), 1);
   });
 });
 
