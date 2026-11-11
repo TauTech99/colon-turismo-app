@@ -5,6 +5,7 @@ import Storage from 'expo-sqlite/kv-store';
 
 import { hayRedAhora } from '@/compartido/useRed';
 import { insertarEventoGuardado, leerEventosGuardados } from '@/eventos/eventosDb';
+import { agendarRecordatorio } from '@/eventos/recordatorios';
 import { sincronizarEventosGuardados } from '@/eventos/useEventoGuardado';
 import { crearEvento } from '@/pruebas/fabricas';
 import {
@@ -64,4 +65,15 @@ test('en un teléfono que nunca sincronizó esa cuenta, copia los eventos guarda
 
   expect(insertarEventoGuardado).toHaveBeenCalledWith(expect.objectContaining({ usuarioId: USUARIO, eventoId: 'evt-1' }));
   expect(quitarEventoDeLaCuenta).not.toHaveBeenCalled();
+});
+
+test('los eventos copiados de la cuenta también agendan su recordatorio, sin pedir permiso', async () => {
+  jest.mocked(Storage.getItem).mockResolvedValue(null);
+  jest.mocked(leerEventosGuardados).mockResolvedValue([]);
+  const feria = crearEvento({ id: 'evt-2' });
+  jest.mocked(obtenerEventosGuardados).mockResolvedValue({ datos: [feria], meta: null });
+
+  await sincronizarEventosGuardados(USUARIO);
+
+  expect(agendarRecordatorio).toHaveBeenCalledWith(feria, { pedirPermiso: false });
 });

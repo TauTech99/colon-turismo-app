@@ -79,6 +79,8 @@ export async function sincronizarEventosGuardados(usuarioId: string): Promise<vo
   if (locales.length === 0 && !(await yaSincronizoEnEsteTelefono('eventosGuardados', usuarioId))) {
     for (const evento of respuesta.datos) {
       await insertarEventoGuardado(filaLocal(usuarioId, evento.id));
+      // Guardado en otro teléfono: acá también tiene que sonar el aviso.
+      await agendarRecordatorio(evento, { pedirPermiso: false });
     }
     await anotarSincronizadoEnEsteTelefono('eventosGuardados', usuarioId);
     return;
