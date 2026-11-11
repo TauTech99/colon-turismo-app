@@ -60,6 +60,9 @@ export function BotonAvisarme({ evento }: Props) {
           ],
         );
       }
+    } catch (error) {
+      console.error('[eventos] No se pudo actualizar el aviso', error);
+      Alert.alert('No se pudo actualizar el aviso', 'Probá de nuevo en un rato.');
     } finally {
       setOcupado(false);
     }

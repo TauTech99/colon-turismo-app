@@ -1,0 +1,28 @@
+# Subflujo: con la sesión guardada, la app pide huella; si el teléfono no tiene,
+# va directo a "Desbloquear". En los dos casos se entra con la contraseña (${CLAVE}).
+appId: com.miciudad.colon
+---
+- runFlow:
+    when:
+      visible: "Usar contraseña"
+    commands:
+      - tapOn: "Usar contraseña"
+      - extendedWaitUntil:
+          visible: "Mostrar contraseña"
+          timeout: 15000
+- runFlow:
+    when:
+      visible: "Hola, .*"
+    commands:
+      - tapOn:
+          text: "Contraseña"
+          above: "Desbloquear"
+          index: 1
+      - inputText: ${CLAVE}
+      - hideKeyboard
+      - tapOn:
+          text: "Desbloquear"
+          below: "Mostrar contraseña"
+      - extendedWaitUntil:
+          notVisible: "Mostrar contraseña"
+          timeout: 20000

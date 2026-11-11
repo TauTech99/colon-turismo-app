@@ -1,0 +1,10 @@
+# Subflujo: en el build de desarrollo, cierra el cartel de advertencias de React Native
+# (LogBox) para que no tape las pestañas. En el APK de release no aparece.
+appId: com.miciudad.colon
+---
+- runFlow:
+    when:
+      visible: "Open debugger to view warnings"
+    commands:
+      - tapOn: "Open debugger to view warnings"
+      - tapOn: "Dismiss"

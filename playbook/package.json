@@ -1,0 +1,6 @@
+{
+  "name": "miciudad-playbook",
+  "private": true,
+  "type": "module",
+  "description": "Menú para levantar Mi Ciudad Colón en Windows o Linux. Sin dependencias: node playbook/playbook.ts"
+}

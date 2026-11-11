@@ -9,6 +9,12 @@ import type { Coordenadas } from '@/tipos/lugar';
 
 export type EstadoPermiso = 'concedido' | 'denegado' | 'pendiente';
 
+// Android muestra el cartel "Location Accuracy" al pedir la ubicación;
+// si la persona lo rechaza, la lectura falla con este mensaje.
+function rechazoElAjuste(error: unknown): boolean {
+  return error instanceof Error && /unsatisfied device settings/i.test(error.message);
+}
+
 // Contrato: coordenadas null si niegan el permiso.
 // Solo pide ubicación EN USO (primer plano). El permiso "siempre"
 // lo pide src/mapa/proximidad.ts, no este hook.
@@ -27,6 +33,8 @@ export function useUbicacion(): {
     let cancelado = false;
     // Evita pedir el cartel dos veces seguidas al montar + primer "active".
     let estadoApp: AppStateStatus = AppState.currentState;
+    // Cerrar ese cartel vuelve a poner la app "active": sin esto, se pedía de nuevo sin parar.
+    let ajusteRechazado = false;
 
     // Última conocida (rápida) y, si se puede, una lectura nueva.
     // Si el GPS está frío o los servicios tardan (típico al cerrar el
@@ -50,6 +58,9 @@ export function useUbicacion(): {
           console.log('[ubicacion] Servicios de ubicación apagados; el mapa sigue');
           return;
         }
+        if (ajusteRechazado) {
+          return;
+        }
 
         const actual = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.Balanced,
@@ -63,6 +74,11 @@ export function useUbicacion(): {
           longitud: actual.coords.longitude,
         });
       } catch (error) {
+        if (rechazoElAjuste(error)) {
+          ajusteRechazado = true;
+          console.log('[ubicacion] Rechazaron la precisión de ubicación; queda la última conocida');
+          return;
+        }
         // "Current location is unavailable" al abrir / al volver del diálogo.
         // Reintento corto: el chipset a veces tarda 1–2 s después del permiso.
         console.log(

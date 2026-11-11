@@ -1,0 +1,54 @@
+# Avisarme (C) pide cuenta; con sesión guarda el evento con aviso y lo vuelve a quitar.
+# Usuario de demo de la API de la cátedra (README de api-mi-ciudad).
+appId: com.miciudad.colon
+name: Avisarme con cuenta
+tags: [parte-c, cuenta]
+env:
+  EVENTO: Feria de artesanos en la plaza
+  EMAIL: nuevo@demo.ar
+  CLAVE: nuevo1234
+---
+- launchApp
+- runFlow:
+    file: subflujos/abrir-evento.yaml
+- tapOn: "Avisarme cuando empiece"
+- extendedWaitUntil:
+    visible: "Usar contraseña|Mostrar contraseña|Dejar de avisarme"
+    timeout: 15000
+- runFlow:
+    when:
+      visible: "Crear cuenta"
+    commands:
+      - tapOn: "Email"
+      - eraseText: 60
+      - inputText: ${EMAIL}
+      - tapOn: "Contraseña"
+      - eraseText: 60
+      - inputText: ${CLAVE}
+      - hideKeyboard
+      - tapOn:
+          text: "Ingresar"
+          below: "Mostrar contraseña"
+      - extendedWaitUntil:
+          notVisible: "Mostrar contraseña"
+          timeout: 20000
+      # Al ingresar, la app vuelve a las pestañas: se reabre el evento.
+      - runFlow:
+          file: subflujos/abrir-evento.yaml
+      - tapOn: "Avisarme cuando empiece"
+# Con la sesión guardada pide huella; se usa la alternativa con contraseña.
+- runFlow:
+    file: subflujos/desbloquear.yaml
+- runFlow:
+    when:
+      visible: "Avisarme cuando empiece"
+    commands:
+      - tapOn: "Avisarme cuando empiece"
+- extendedWaitUntil:
+    visible: "Dejar de avisarme"
+    timeout: 15000
+- takeScreenshot: evidencia/04-avisarme-guardado
+- tapOn: "Dejar de avisarme"
+- extendedWaitUntil:
+    visible: "Avisarme cuando empiece"
+    timeout: 15000

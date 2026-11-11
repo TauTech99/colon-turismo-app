@@ -6,6 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 
 import { escribirConsulta, invalidarConsultas } from '@/compartido/consulta';
+import {
+  anotarSincronizadoEnEsteTelefono,
+  yaSincronizoEnEsteTelefono,
+} from '@/compartido/sincronizadoEnEsteTelefono';
 import { hayRedAhora } from '@/compartido/useRed';
 import { useSesion } from '@/cuenta/SesionContext';
 import {
@@ -47,8 +51,8 @@ function filaLocal(usuarioId: string, eventoId: string) {
 }
 
 // El teléfono manda: sube lo que se guardó sin señal y saca
-// de la API lo que se destildó acá. Si este teléfono no tenía
-// ninguno, copia los de la cuenta (otro celular).
+// de la API lo que se destildó acá. Si esta cuenta nunca sincronizó
+// en este teléfono, copia los de la cuenta (otro celular).
 export async function sincronizarEventosGuardados(usuarioId: string): Promise<void> {
   let hayRed = false;
   try {
@@ -72,10 +76,13 @@ export async function sincronizarEventosGuardados(usuarioId: string): Promise<vo
   const idsLocales = new Set(locales.map((fila) => fila.eventoId));
   const idsRemotos = new Set(respuesta.datos.map((evento) => evento.id));
 
-  if (locales.length === 0) {
+  if (locales.length === 0 && !(await yaSincronizoEnEsteTelefono('eventosGuardados', usuarioId))) {
     for (const evento of respuesta.datos) {
       await insertarEventoGuardado(filaLocal(usuarioId, evento.id));
+      // Guardado en otro teléfono: acá también tiene que sonar el aviso.
+      await agendarRecordatorio(evento, { pedirPermiso: false });
     }
+    await anotarSincronizadoEnEsteTelefono('eventosGuardados', usuarioId);
     return;
   }
 
@@ -90,6 +97,7 @@ export async function sincronizarEventosGuardados(usuarioId: string): Promise<vo
       await guardarEventoEnCuenta(local.eventoId);
     }
   }
+  await anotarSincronizadoEnEsteTelefono('eventosGuardados', usuarioId);
 }
 
 export const claveEventoGuardado = (usuarioId: string, eventoId: string) =>

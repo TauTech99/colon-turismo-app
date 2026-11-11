@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 import {
   CANAL_EVENTOS,
   cargarNotificaciones,
+  hayPermisoNotificaciones,
   pedirPermisoNotificaciones,
 } from '@/compartido/notificaciones';
 import { leerIdsEventosGuardados } from '@/eventos/eventosDb';
@@ -61,7 +62,12 @@ export type ResultadoRecordatorio = 'agendado' | 'sinPermiso' | 'noCorresponde';
 
 // Programa el aviso 60 minutos antes de `inicio`.
 // Si ya falta menos, suena a los 2 segundos: igual es "antes de que empiece".
-export async function agendarRecordatorio(evento: Evento): Promise<ResultadoRecordatorio> {
+// `pedirPermiso: false` cuando no lo pidió la persona (sincronizar, refrescar
+// la agenda): solo consulta, para no abrir el cartel del permiso de golpe.
+export async function agendarRecordatorio(
+  evento: Evento,
+  { pedirPermiso = true }: { pedirPermiso?: boolean } = {},
+): Promise<ResultadoRecordatorio> {
   if (!enElTelefono) {
     return 'noCorresponde';
   }
@@ -77,7 +83,7 @@ export async function agendarRecordatorio(evento: Evento): Promise<ResultadoReco
     return 'noCorresponde';
   }
 
-  const permitido = await pedirPermisoNotificaciones();
+  const permitido = pedirPermiso ? await pedirPermisoNotificaciones() : await hayPermisoNotificaciones();
   if (!permitido) {
     console.log('[recordatorios] Sin permiso. El evento quedó guardado igual.');
     return 'sinPermiso';
@@ -134,7 +140,8 @@ async function avisarCancelacionOSuspension(evento: Evento): Promise<void> {
     return;
   }
 
-  const permitido = await pedirPermisoNotificaciones();
+  // Sale de un refresco de la agenda, no de un toque: solo consulta el permiso.
+  const permitido = await hayPermisoNotificaciones();
   if (!permitido) {
     console.log('[recordatorios] Sin permiso. No se pudo mostrar el aviso.');
     return;
@@ -207,6 +214,11 @@ export async function revisarCambiosDeEstado(
       avisosYaDisparados.add(nuevo.id);
       await cancelarRecordatorio(nuevo.id);
       await avisarCancelacionOSuspension(nuevo);
+    } else if (nuevo.estado === 'programado' && esCanceladoOSuspendido(anterior)) {
+      // Volvió a programarse: el recordatorio que se canceló tiene que volver,
+      // y si se suspende otra vez hay que poder avisar de nuevo.
+      avisosYaDisparados.delete(nuevo.id);
+      await agendarRecordatorio(nuevo, { pedirPermiso: false });
     }
   }
 }

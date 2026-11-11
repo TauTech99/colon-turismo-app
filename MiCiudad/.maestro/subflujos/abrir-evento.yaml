@@ -1,0 +1,19 @@
+# Subflujo: desde cualquier pestaña, abre ${EVENTO} en la agenda y baja hasta "Avisarme".
+appId: com.miciudad.colon
+---
+- runFlow:
+    file: cerrar-aviso-dev.yaml
+- tapOn: ".*Agenda"
+- extendedWaitUntil:
+    visible: "Hoy|Mañana|.*, [0-9]+ de .*"
+    timeout: 20000
+- scrollUntilVisible:
+    element: "${EVENTO}.*"
+    direction: DOWN
+- tapOn: "${EVENTO}.*"
+- extendedWaitUntil:
+    visible: "Cuándo"
+    timeout: 15000
+- scrollUntilVisible:
+    element: "Avisarme cuando empiece|Dejar de avisarme"
+    direction: DOWN

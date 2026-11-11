@@ -203,7 +203,8 @@ async function revisarProximidadAhora(coordenadas: Coordenadas): Promise<void> {
       continue;
     }
 
-    const permitido = await pedirPermisoNotificaciones();
+    // Solo consulta: el permiso se pide al prender el switch en Yo, no caminando.
+    const permitido = await hayPermisoNotificaciones();
     if (!permitido) {
       console.log('[proximidad] Sin permiso de avisos. No se muestra.');
       return;
@@ -382,7 +383,7 @@ export function useProximidad(): void {
       // Con la app abierta: sirve en Expo Go (ahí no hay fondo de verdad).
       // El tope de un aviso por lugar y por día evita el duplicado
       // si también corre la tarea.
-      suscripcion = await Location.watchPositionAsync(
+      const nueva = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Balanced,
           distanceInterval: 25,
@@ -395,6 +396,12 @@ export function useProximidad(): void {
           });
         },
       );
+      // La limpieza pudo correr mientras se esperaba al GPS (como en useBrujula).
+      if (cancelado) {
+        nueva.remove();
+        return;
+      }
+      suscripcion = nueva;
     })();
 
     return () => {

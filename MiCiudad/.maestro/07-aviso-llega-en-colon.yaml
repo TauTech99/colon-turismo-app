@@ -1,0 +1,81 @@
+# Aviso de proximidad de punta a punta (C): con el GPS simulado en Colón,
+# prender el aviso y llegar a las Termas dispara "Estás cerca de Termas de Colón".
+# En un celular real, el GPS simulado necesita que el driver de Maestro tenga permiso de ubicación
+# simulada: la opción "tests" del playbook se lo da mientras corre.
+appId: com.miciudad.colon
+name: Aviso al llegar a un lugar de Colón
+tags: [parte-c, cuenta, gps]
+env:
+  EMAIL: nuevo@demo.ar
+  CLAVE: nuevo1234
+onFlowComplete:
+  - setLocation:
+      latitude: -32.2236
+      longitude: -58.1427
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+# Afuera del radio de cualquier lugar, al sur de la ciudad.
+- setLocation:
+    latitude: -32.2600
+    longitude: -58.1800
+- extendedWaitUntil:
+    visible: "Colón, Entre Ríos"
+    timeout: 30000
+- runFlow:
+    file: subflujos/cerrar-aviso-dev.yaml
+- tapOn: ".*Yo"
+- tapOn:
+    text: "Ingresar"
+    above: "Crear cuenta"
+- extendedWaitUntil:
+    visible: "Mostrar contraseña"
+    timeout: 15000
+- tapOn: "Email"
+- inputText: ${EMAIL}
+- tapOn: "Contraseña"
+- inputText: ${CLAVE}
+- hideKeyboard
+- tapOn:
+    text: "Ingresar"
+    below: "Mostrar contraseña"
+- extendedWaitUntil:
+    visible: "Notificaciones.*"
+    timeout: 20000
+- tapOn: "Notificaciones.*"
+- tapOn: "Avisar cuando esté cerca de un lugar"
+- extendedWaitUntil:
+    visible: "OK"
+    timeout: 15000
+- tapOn: "OK"
+- pressKey: Home
+# Llegar a las Termas de Colón con la app en segundo plano.
+- setLocation:
+    latitude: -32.2135
+    longitude: -58.1455
+- swipe:
+    start: 50%, 1%
+    end: 50%, 75%
+- extendedWaitUntil:
+    visible: "Estás cerca de Termas de Colón"
+    timeout: 90000
+- takeScreenshot: evidencia/07-aviso-termas
+- pressKey: Back
+# Dejar el aviso apagado.
+- launchApp
+- runFlow:
+    file: subflujos/esperar-aviso-dev.yaml
+# Enlace directo: el cartel de desarrollo puede tapar la pestaña.
+- openLink: miciudad://yo
+- extendedWaitUntil:
+    visible: "Usar contraseña|Hola, .*|Notificaciones.*"
+    timeout: 15000
+- runFlow:
+    file: subflujos/desbloquear.yaml
+- tapOn: "Notificaciones.*"
+- tapOn: "Avisar cuando esté cerca de un lugar"
+- extendedWaitUntil:
+    visible: "Aviso al acercarme apagado"
+    timeout: 15000

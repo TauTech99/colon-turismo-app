@@ -1,0 +1,24 @@
+# Sin red: la app sigue mostrando lo guardado y avisa con el banner (expo-network).
+appId: com.miciudad.colon
+name: Sin conexión y vuelta de la red
+tags: [conectividad]
+onFlowComplete:
+  - setAirplaneMode: disabled
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Colón, Entre Ríos"
+    timeout: 30000
+- setAirplaneMode: enabled
+- extendedWaitUntil:
+    visible: "Sin conexión — mostrando datos guardados"
+    timeout: 20000
+- assertVisible: "Parque Nacional El Palmar"
+# Enlace directo: el cartel de desarrollo puede tapar la pestaña.
+- openLink: miciudad://agenda
+- assertVisible: "Qué hacer"
+- takeScreenshot: evidencia/05-sin-conexion
+- setAirplaneMode: disabled
+- extendedWaitUntil:
+    notVisible: "Sin conexión — mostrando datos guardados"
+    timeout: 45000
