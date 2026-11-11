@@ -62,6 +62,11 @@ export class Terminal {
     this.simular = simular;
   }
 
+  // Para cuando un paso son varios comandos: se muestra uno que los resume.
+  mostrar(comando: string): void {
+    this.consola.porDetras(comando);
+  }
+
   // Solo lee (versiones, dispositivos…): corre siempre, sin mostrarse.
   consultar(programa: string, argumentos: string[], opciones: Opciones = {}): Promise<Resultado> {
     return this.correr(programa, argumentos, opciones, false);

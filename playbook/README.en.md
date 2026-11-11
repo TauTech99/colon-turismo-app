@@ -20,11 +20,12 @@ It only needs **Node 24** (the same the API asks for). It installs nothing extra
 | 3 | Levantar todo y abrir la app (start everything) | The everyday one: API + Metro + phone or emulator, and opens the app. Ctrl+C stops everything. |
 | 4 | Instalar la app (install) | Builds and installs the development build, or installs an APK (for example the EAS preview). |
 | 5 | Configurar el emulador (set up the emulator) | Creates one with the app's Android version and RAM and cores sized to your computer, adjusts an existing one or wipes its data. |
-| 6 | Ver el celu en la compu (show the phone) | Opens the phone screen in a window, to share it during the defense. |
-| 7 | Correr los tests (run the tests) | Jest (app), Vitest (API) and the Maestro end-to-end flows. |
-| 8 | Volver los datos a cero (reset data) | Back to the demo data before a demo. |
-| 9 | Ver la documentación (docs) | Opens all the project documentation in the browser. |
-| 10 | Glosario (glossary) | What each command does and what it runs behind the scenes. |
+| 6 | GPS simulado en Colón (simulated GPS) | On the phone it gets Lockito ready with the route through the 23 places; on the emulator it puts the GPS on a place or walks it through them. |
+| 7 | Ver el celu en la compu (show the phone) | Opens the phone screen in a window, to share it during the defense. |
+| 8 | Correr los tests (run the tests) | Jest (app), Vitest (API) and the Maestro end-to-end flows. |
+| 9 | Volver los datos a cero (reset data) | Back to the demo data before a demo. |
+| 10 | Ver la documentación (docs) | Opens all the project documentation in the browser. |
+| 11 | Glosario (glossary) | What each command does and what it runs behind the scenes. |
 
 ## First time
 
@@ -39,8 +40,8 @@ After that, every day: **Levantar**.
 ### For the defense
 
 Run **Levantar** with the phone over USB and then **Ver el celu en la compu**; share that window in the video call. For the GPS in Colón:
-- **Emulator:** the playbook sets it to Plaza San Martín on its own.
-- **Phone:** you need a mock location app, such as Lockito.
+- **Emulator:** **Levantar** puts it on Plaza San Martín; **GPS simulado** moves it to another place or walks it through all 23.
+- **Phone:** **GPS simulado** gets Lockito ready (enabled as the mock location app, with the `colon-recorrido.gpx` route in Downloads). In Lockito, import that route and tap Play. If the phone already has Lockito, **Levantar** gets it ready on the way.
 
 ## Without the menu
 
@@ -52,7 +53,7 @@ node playbook/playbook.ts revisar
 node playbook/playbook.ts levantar --simular   # shows what it would do, changes nothing
 ```
 
-Commands: `revisar`, `preparar`, `levantar`, `instalar`, `emulador`, `pantalla`, `tests`, `reiniciar`, `docs`, `glosario`.
+Commands: `revisar`, `preparar`, `levantar`, `instalar`, `emulador`, `gps`, `pantalla`, `tests`, `reiniciar`, `docs`, `glosario`.
 
 ## The recommended emulator
 
@@ -139,7 +140,7 @@ Object-oriented: each class has a single responsibility. Dependency-free TypeScr
 | `Menu.ts` | The numbered menu. |
 | `comandos/` | One class per option. All extend `Comando`, which holds the name, what it does and what it runs behind the scenes (in Spanish and English): the menu, the glossary and the documentation come from there. |
 | `nucleo/` | `Consola` (print and ask), `Terminal` (run programs), `Plataforma` (Windows/Linux differences), `Proyecto` (paths and ports), `ArchivoEnv` (read and change a `.env` without printing values) and `Configuracion`. |
-| `android/` | `Adb` (phone and emulator), `Emulador` (starting it), `Avd` (its settings), `HerramientasSdk` (sdkmanager and avdmanager), `RecomendacionEmulador` (values for your computer) and `SelectorDeDispositivo`. |
+| `android/` | `Adb` (phone and emulator), `Emulador` (starting it), `Avd` (its settings), `HerramientasSdk` (sdkmanager and avdmanager), `RecomendacionEmulador` (values for your computer), `SelectorDeDispositivo`, `Lockito` (mock GPS on the phone), `RutaGpx` (the places in `gps/colon-recorrido.gpx`) and `RecorridoEmulador`. |
 | `servicios/` | `Api`, `App`, `Metro`, `Java` and `PuenteTcp` (port forwarding for Windows). |
 | `documentacion/` | `Markdown` (to HTML), `SitioDeDocumentacion` (collects the documents) and `PaginaHtml` (draws the page: index, language, theme and diagram viewer). |
 

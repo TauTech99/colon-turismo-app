@@ -81,9 +81,31 @@ export class Adb {
     return salida.trim() === '1';
   }
 
-  // Solo emulador: fija el GPS (adb pide longitud primero).
+  // Solo emulador: fija la ubicación. Usa proveedores de prueba de Android
+  // (lo mismo que Maestro): `emu geo fix` no llega a la app en las imágenes
+  // nuevas, porque solo mueve el GPS y la app pide ubicación por red.
   async ponerGps(serial: string, latitud: number, longitud: number): Promise<void> {
-    await this.terminal.ejecutar(this.programa, ['-s', serial, 'emu', 'geo', 'fix', String(longitud), String(latitud)], { sinSalida: true });
+    const shell = ['-s', serial, 'shell'];
+    this.terminal.mostrar(`adb -s ${serial} shell cmd location providers set-test-provider-location gps|network|fused --location ${latitud},${longitud}`);
+    if (this.terminal.simular) {
+      return;
+    }
+    await this.terminal.consultar(this.programa, [...shell, 'appops', 'set', 'com.android.shell', 'android:mock_location', 'allow']);
+    let funciono = true;
+    for (const proveedor of ['gps', 'network', 'fused']) {
+      // Si ya existe, add-test-provider falla: no importa.
+      await this.terminal.consultar(this.programa, [...shell, 'cmd', 'location', 'providers', 'add-test-provider', proveedor]);
+      await this.terminal.consultar(this.programa, [...shell, 'cmd', 'location', 'providers', 'set-test-provider-enabled', proveedor, 'true']);
+      const { codigo, salida } = await this.terminal.consultar(this.programa, [
+        ...shell, 'cmd', 'location', 'providers', 'set-test-provider-location', proveedor,
+        '--location', `${latitud},${longitud}`, '--accuracy', '5',
+      ]);
+      funciono &&= codigo === 0 && !/unknown|error|exception/i.test(salida);
+    }
+    // Android 11 o anterior no tiene esos comandos: queda el GPS de la consola del emulador.
+    if (!funciono) {
+      await this.terminal.consultar(this.programa, ['-s', serial, 'emu', 'geo', 'fix', String(longitud), String(latitud)]);
+    }
   }
 
   // Solo emulador: qué AVD es ("MiCiudad_Pixel").

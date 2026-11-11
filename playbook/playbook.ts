@@ -9,12 +9,16 @@ import { fileURLToPath } from 'node:url';
 import { Adb } from './android/Adb.ts';
 import { Emulador } from './android/Emulador.ts';
 import { HerramientasSdk } from './android/HerramientasSdk.ts';
+import { Lockito } from './android/Lockito.ts';
+import { RecorridoEmulador } from './android/RecorridoEmulador.ts';
+import { RutaGpx } from './android/RutaGpx.ts';
 import { RecomendacionEmulador } from './android/RecomendacionEmulador.ts';
 import { SelectorDeDispositivo } from './android/SelectorDeDispositivo.ts';
 import { RegistroDeComandos } from './comandos/Comando.ts';
 import { ConfigurarEmulador } from './comandos/ConfigurarEmulador.ts';
 import { CorrerTests } from './comandos/CorrerTests.ts';
 import { Glosario } from './comandos/Glosario.ts';
+import { GpsSimulado } from './comandos/GpsSimulado.ts';
 import { Instalar } from './comandos/Instalar.ts';
 import { Levantar } from './comandos/Levantar.ts';
 import { Preparar } from './comandos/Preparar.ts';
@@ -59,12 +63,13 @@ async function main(argumentos: string[]): Promise<number> {
   const api = new Api(terminal, proyecto);
   const app = new App(terminal, proyecto, plataforma);
   const metro = new Metro(terminal, proyecto, configuracion.puertoMetro);
+  const lockito = new Lockito(terminal, adb);
 
   const registro = new RegistroDeComandos();
   const instalar = new Instalar({ consola, plataforma, selector, adb, app, java });
   registro.agregar(new Revisar({ consola, terminal, plataforma, proyecto, adb, emulador, java, api, metro }));
   registro.agregar(new Preparar({ consola, proyecto, api, app }));
-  registro.agregar(new Levantar({ consola, plataforma, terminal, proyecto, configuracion, selector, adb, api, metro, instalar }));
+  registro.agregar(new Levantar({ consola, plataforma, terminal, proyecto, configuracion, selector, adb, api, metro, instalar, lockito }));
   registro.agregar(instalar);
   registro.agregar(
     new ConfigurarEmulador({
@@ -76,6 +81,9 @@ async function main(argumentos: string[]): Promise<number> {
       sdk: new HerramientasSdk(terminal, plataforma),
       recomendacion: new RecomendacionEmulador(),
     }),
+  );
+  registro.agregar(
+    new GpsSimulado({ consola, terminal, selector, adb, lockito, recorrido: new RecorridoEmulador(consola, adb), ruta: new RutaGpx(proyecto.rutaGps) }),
   );
   registro.agregar(new VerPantalla({ consola, terminal, plataforma, selector }));
   registro.agregar(new CorrerTests({ consola, terminal, plataforma, proyecto, selector, adb, api, app }));

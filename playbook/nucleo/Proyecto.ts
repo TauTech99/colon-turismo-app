@@ -88,6 +88,11 @@ export class Proyecto {
     return join(this.carpetaApp, '.maestro');
   }
 
+  // Los 23 lugares de los datos de demo, para el GPS simulado.
+  get rutaGps(): string {
+    return join(this.carpetaPlaybook, 'gps', 'colon-recorrido.gpx');
+  }
+
   registro(nombre: string): string {
     return join(this.carpetaPlaybook, 'registros', nombre);
   }

@@ -20,11 +20,12 @@ Solo necesita **Node 24** (el mismo que pide la API). No instala nada extra.
 | 3 | Levantar todo y abrir la app | El de todos los días: API + Metro + celu o emulador, y abre la app. Ctrl+C apaga todo. |
 | 4 | Instalar la app | Compila e instala el build de desarrollo, o instala un APK (por ejemplo el preview de EAS). |
 | 5 | Configurar el emulador | Lo crea con la versión de Android de la app y la RAM y los núcleos según tu compu, ajusta uno existente o le borra los datos. |
-| 6 | Ver el celu en la compu | Abre la pantalla del celu en una ventana, para compartirla en la defensa. |
-| 7 | Correr los tests | Jest (app), Vitest (API) y los recorridos E2E de Maestro. |
-| 8 | Volver los datos a cero | Vuelve a los datos de demo antes de una demo. |
-| 9 | Ver la documentación | Abre toda la documentación del proyecto en el navegador. |
-| 10 | Glosario | Qué hace cada comando y qué corre por detrás. |
+| 6 | GPS simulado en Colón | En el celu deja lista Lockito con la ruta de los 23 lugares; en el emulador pone el GPS en un lugar o lo hace recorrerlos. |
+| 7 | Ver el celu en la compu | Abre la pantalla del celu en una ventana, para compartirla en la defensa. |
+| 8 | Correr los tests | Jest (app), Vitest (API) y los recorridos E2E de Maestro. |
+| 9 | Volver los datos a cero | Vuelve a los datos de demo antes de una demo. |
+| 10 | Ver la documentación | Abre toda la documentación del proyecto en el navegador. |
+| 11 | Glosario | Qué hace cada comando y qué corre por detrás. |
 
 ## Primera vez
 
@@ -39,8 +40,8 @@ Después, todos los días: **Levantar**.
 ### Para la defensa
 
 **Levantar** con el celu por USB y después **Ver el celu en la compu**: se comparte esa ventana en la videollamada. Para el GPS en Colón:
-- **Emulador:** el playbook lo pone en la Plaza San Martín solo.
-- **Celular:** hace falta una app de ubicación simulada, como Lockito.
+- **Emulador:** **Levantar** lo pone en la Plaza San Martín; **GPS simulado** lo deja en otro lugar o le hace recorrer los 23.
+- **Celular:** **GPS simulado** deja lista Lockito (habilitada como ubicación simulada y con la ruta `colon-recorrido.gpx` en Descargas). En Lockito se importa esa ruta y se toca Play. Si el celu ya tiene Lockito, **Levantar** la deja lista de camino.
 
 ## Sin menú
 
@@ -52,7 +53,7 @@ node playbook/playbook.ts revisar
 node playbook/playbook.ts levantar --simular   # muestra lo que haría, sin cambiar nada
 ```
 
-Comandos: `revisar`, `preparar`, `levantar`, `instalar`, `emulador`, `pantalla`, `tests`, `reiniciar`, `docs`, `glosario`.
+Comandos: `revisar`, `preparar`, `levantar`, `instalar`, `emulador`, `gps`, `pantalla`, `tests`, `reiniciar`, `docs`, `glosario`.
 
 ## El emulador recomendado
 
@@ -139,7 +140,7 @@ Programado con objetos: cada clase tiene una sola responsabilidad. TypeScript si
 | `Menu.ts` | El menú numerado. |
 | `comandos/` | Una clase por opción. Todas heredan de `Comando`, que guarda el nombre, qué hace y qué corre por detrás: de ahí salen el menú, el glosario y la documentación. |
 | `nucleo/` | `Consola` (escribir y preguntar), `Terminal` (correr programas), `Plataforma` (diferencias Windows/Linux), `Proyecto` (rutas y puertos), `ArchivoEnv` (leer y cambiar un `.env` sin mostrar valores) y `Configuracion`. |
-| `android/` | `Adb` (celu y emulador), `Emulador` (prenderlo), `Avd` (su configuración), `HerramientasSdk` (sdkmanager y avdmanager), `RecomendacionEmulador` (valores según la compu) y `SelectorDeDispositivo`. |
+| `android/` | `Adb` (celu y emulador), `Emulador` (prenderlo), `Avd` (su configuración), `HerramientasSdk` (sdkmanager y avdmanager), `RecomendacionEmulador` (valores según la compu), `SelectorDeDispositivo`, `Lockito` (GPS simulado en el celu), `RutaGpx` (los lugares de `gps/colon-recorrido.gpx`) y `RecorridoEmulador`. |
 | `servicios/` | `Api`, `App`, `Metro`, `Java` y `PuenteTcp` (reenvío de puertos para Windows). |
 | `documentacion/` | `Markdown` (convierte a HTML), `SitioDeDocumentacion` (junta los documentos) y `PaginaHtml` (dibuja la página: índice, idioma, tema y visor de diagramas). |
 

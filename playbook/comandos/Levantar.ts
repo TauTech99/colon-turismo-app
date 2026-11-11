@@ -2,6 +2,7 @@
 // emulador por adb y abre la app. Ctrl+C apaga todo.
 
 import type { Adb, Dispositivo } from '../android/Adb.ts';
+import type { Lockito } from '../android/Lockito.ts';
 import type { SelectorDeDispositivo } from '../android/SelectorDeDispositivo.ts';
 import type { Configuracion } from '../nucleo/Configuracion.ts';
 import type { Consola } from '../nucleo/Consola.ts';
@@ -24,6 +25,7 @@ export class Levantar extends Comando {
     'Prende la API (si no está prendida), conecta el celu o el emulador por adb, prende Metro y abre Mi Ciudad. Ahí mismo se ven los errores y con "r" se recarga la app. Ctrl+C apaga todo.';
   readonly porDetras = [
     'cd api-mi-ciudad && pnpm dev  (de fondo; registro en playbook/registros/api.log)',
+    'celu con Lockito: adb shell appops set fr.dvilleneuve.lockito android:mock_location allow + adb push colon-recorrido.gpx',
     'adb -s <equipo> reverse tcp:<puerto API> tcp:<puerto API>',
     'adb -s <equipo> reverse tcp:8081 tcp:<puerto Metro>',
     'cd MiCiudad && npx expo start --port <puerto Metro>  (--clear si cambió el .env)',
@@ -35,6 +37,7 @@ export class Levantar extends Comando {
       'Starts the API (if it is not running), connects the phone or emulator through adb, starts Metro and opens Mi Ciudad. Errors show up right there and "r" reloads the app. Ctrl+C stops everything.',
     porDetras: [
       'cd api-mi-ciudad && pnpm dev  (in the background; log in playbook/registros/api.log)',
+      'phone with Lockito: adb shell appops set fr.dvilleneuve.lockito android:mock_location allow + adb push colon-recorrido.gpx',
       'adb -s <device> reverse tcp:<API port> tcp:<API port>',
       'adb -s <device> reverse tcp:8081 tcp:<Metro port>',
       'cd MiCiudad && npx expo start --port <Metro port>  (--clear if the .env changed)',
@@ -52,6 +55,7 @@ export class Levantar extends Comando {
   private readonly api: Api;
   private readonly metro: Metro;
   private readonly instalar: Instalar;
+  private readonly lockito: Lockito;
 
   constructor(dependencias: {
     consola: Consola;
@@ -64,6 +68,7 @@ export class Levantar extends Comando {
     api: Api;
     metro: Metro;
     instalar: Instalar;
+    lockito: Lockito;
   }) {
     super();
     this.consola = dependencias.consola;
@@ -76,6 +81,7 @@ export class Levantar extends Comando {
     this.api = dependencias.api;
     this.metro = dependencias.metro;
     this.instalar = dependencias.instalar;
+    this.lockito = dependencias.lockito;
   }
 
   async ejecutar(): Promise<void> {
@@ -88,6 +94,10 @@ export class Levantar extends Comando {
     const dispositivo = await this.selector.elegir();
     if (!dispositivo || !(await this.appInstalada(dispositivo))) {
       return;
+    }
+
+    if (!dispositivo.esEmulador) {
+      await this.prepararGpsDelCelu(dispositivo);
     }
 
     const api = await this.prenderApi();
@@ -146,6 +156,25 @@ export class Levantar extends Comando {
       return false;
     }
     return this.instalar.instalarEn(dispositivo);
+  }
+
+  // Un emulador recién creado trae apagada la precisión de ubicación de Google.
+  private avisarPrecisionDeUbicacion(): void {
+    this.consola.texto(
+      this.consola.tenue('  Si es un emulador nuevo y Android pide activar "Location Accuracy", tocá "Turn on" una vez: sin eso la app no recibe el GPS.'),
+    );
+  }
+
+  // De camino: si el celu tiene Lockito, lo deja listo para simular el GPS en Colón.
+  private async prepararGpsDelCelu(dispositivo: Dispositivo): Promise<void> {
+    const estado = await this.lockito.dejarLista(dispositivo.serial, this.proyecto.rutaGps);
+    if (estado === 'lista') {
+      this.consola.ok('Lockito listo: habilitado como GPS simulado y con la ruta de Colón en Descargas (importala y tocá Play).');
+    } else if (estado === 'noInstalada') {
+      this.consola.aviso('Para simular el GPS en Colón en el celu falta Lockito: corré "gps" y te la deja lista.');
+    } else {
+      this.consola.aviso('No pude preparar Lockito. Corré "gps" para hacerlo paso a paso.');
+    }
   }
 
   // null: ya estaba prendida (no la apagamos al salir). false: no arrancó.
@@ -207,9 +236,12 @@ export class Levantar extends Comando {
     if (this.terminal.simular) {
       await this.adb.abrirApp(dispositivo.serial, PAQUETE_ANDROID);
     } else {
-      void this.metro.esperarQueArranque().then((listo) => {
+      void this.metro.esperarQueArranque().then(async (listo) => {
         if (listo) {
-          void this.adb.abrirApp(dispositivo.serial, PAQUETE_ANDROID);
+          await this.adb.abrirApp(dispositivo.serial, PAQUETE_ANDROID);
+          if (dispositivo.esEmulador) {
+            this.avisarPrecisionDeUbicacion();
+          }
         }
       });
     }
