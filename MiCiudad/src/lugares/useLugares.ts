@@ -4,6 +4,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { precargarAudioguiasDeLugares } from '@/audioguias/descargas';
 import { hayRedAhora, useRed } from '@/compartido/useRed';
 import { guardarLugares, leerLugares } from '@/lugares/lugaresDb';
 import { ERROR_RED } from '@/servicios/cliente';
@@ -76,6 +77,8 @@ async function pedirLugares(): Promise<Lugar[]> {
   }
 
   await guardarLugares(respuesta.datos);
+  // D: con red, deja las audioguías en disco para usarlas sin señal (PRD §6).
+  void precargarAudioguiasDeLugares(respuesta.datos);
   return respuesta.datos;
 }
 

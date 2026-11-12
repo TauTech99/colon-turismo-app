@@ -1,10 +1,13 @@
 // Dueño: D — Recorrido y audioguías
-// Cache en disco al abrir con red; play sin señal desde esa copia.
+// Cache en disco: al sync del catálogo con red, y al abrir la ficha.
+// Play sin señal desde esa copia.
 
 import { Directory, File, Paths } from 'expo-file-system';
 
+import type { Lugar } from '@/tipos/lugar';
+
 // Guarda la audioguía en disco para El Palmar / modo avión.
-// Automático al abrir el lugar con red; sin botón Descargar.
+// Precarga al guardar el catálogo con red; también al abrir la ficha.
 // Paths.document = carpeta de la app que sobrevive si la cerrás.
 // Solo API nueva: File / Directory / Paths (SDK 57). Nunca la API vieja.
 
@@ -57,4 +60,27 @@ export async function asegurarAudioguiaEnDisco(url: string): Promise<string | nu
     console.log('[audioguias] No se pudo guardar en disco', error);
     return null;
   }
+}
+
+// Hotel con Wi‑Fi: baja todas las audioguías del catálogo al disco.
+// Una detrás de otra; si ya está, asegurarAudioguiaEnDisco no vuelve a pedir.
+// Fire-and-forget desde useLugares: no bloquea el mapa.
+export async function precargarAudioguiasDeLugares(lugares: Lugar[]): Promise<void> {
+  const urls: string[] = [];
+  for (const lugar of lugares) {
+    const url = lugar.audioguia?.url;
+    if (url && !urls.includes(url)) {
+      urls.push(url);
+    }
+  }
+
+  if (urls.length === 0) {
+    return;
+  }
+
+  console.log(`[audioguias] Precargando ${urls.length}…`);
+  for (const url of urls) {
+    await asegurarAudioguiaEnDisco(url);
+  }
+  console.log(`[audioguias] Precarga lista (${urls.length})`);
 }
